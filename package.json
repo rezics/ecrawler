@@ -1,0 +1,22 @@
+{
+	"type": "module",
+	"workspaces": [
+		"./packages/*"
+	],
+	"devDependencies": {
+		"@types/node": "^24.10.1",
+		"prettier": "^3.7.4",
+		"tsx": "^4.21.0"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@effect/platform": "^0.93.6",
+		"@effect/platform-node": "^0.103.0",
+		"@effect/sql": "^0.48.6",
+		"@effect/sql-pg": "^0.49.7",
+		"effect": "^3.19.9",
+		"postgres": "^3.4.7"
+	}
+}

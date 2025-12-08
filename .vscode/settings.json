@@ -1,0 +1,4 @@
+{
+	"cSpell.words": ["ecrawler", "TIMESTAMPTZ"],
+	"typescript.tsdk": "node_modules/typescript/lib"
+}

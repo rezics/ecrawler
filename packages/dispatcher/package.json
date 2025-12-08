@@ -1,0 +1,10 @@
+{
+	"name": "@ecrawler/dispatcher",
+	"module": "main.ts",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"start": "bun run main.ts",
+		"dev": "bun --watch main.ts"
+	}
+}
