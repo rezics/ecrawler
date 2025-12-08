@@ -44,9 +44,28 @@ importers:
 
   packages/dispatcher: {}
 
-  packages/worker/discoverer: {}
+  packages/worker/core: {}
 
-  packages/worker/scraper: {}
+  packages/worker/discoverer:
+    dependencies:
+      '@ecrawler/dispatcher':
+        specifier: workspace:*
+        version: link:../../dispatcher
+      '@ecrawler/worker-core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/worker/scraper:
+    dependencies:
+      '@ecrawler/collector':
+        specifier: workspace:*
+        version: link:../../collector
+      '@ecrawler/dispatcher':
+        specifier: workspace:*
+        version: link:../../dispatcher
+      '@ecrawler/worker-core':
+        specifier: workspace:*
+        version: link:../core
 
 packages:
 

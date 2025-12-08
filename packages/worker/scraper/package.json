@@ -1,6 +1,15 @@
 {
 	"name": "@ecrawler/scraper",
-	"module": "index.ts",
+	"module": "main.ts",
 	"type": "module",
-	"private": true
+	"private": true,
+	"scripts": {
+		"start": "bun run main.ts",
+		"dev": "bun --watch main.ts"
+	},
+	"dependencies": {
+		"@ecrawler/dispatcher": "workspace:*",
+		"@ecrawler/collector": "workspace:*",
+		"@ecrawler/worker-core": "workspace:*"
+	}
 }

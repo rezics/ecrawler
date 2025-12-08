@@ -4,11 +4,11 @@
 
 		"lib": ["ESNext"],
 		"target": "ESNext",
-		"module": "nodenext",
+		"module": "esnext",
 		"moduleDetection": "force",
 		"jsx": "react-jsx",
 		"allowJs": true,
-		"moduleResolution": "nodenext",
+		"moduleResolution": "bundler",
 		"allowImportingTsExtensions": true,
 		"verbatimModuleSyntax": true,
 		"noEmit": true,

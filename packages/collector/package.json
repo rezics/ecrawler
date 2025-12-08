@@ -1,6 +1,15 @@
 {
 	"name": "@ecrawler/collector",
-	"module": "index.ts",
+	"module": "main.ts",
 	"type": "module",
-	"private": true
+	"private": true,
+	"scripts": {
+		"start": "bun run main.ts",
+		"dev": "bun --watch main.ts"
+	},
+	"exports": {
+		".": "./main.ts",
+		"./api": "./services/apis/index.ts",
+		"./schemas/*": "./services/schemas/*.ts"
+	}
 }

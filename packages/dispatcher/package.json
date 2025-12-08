@@ -6,5 +6,10 @@
 	"scripts": {
 		"start": "bun run main.ts",
 		"dev": "bun --watch main.ts"
+	},
+	"exports": {
+		".": "./main.ts",
+		"./api": "./services/apis/index.ts",
+		"./schemas/*": "./services/schemas/*.ts"
 	}
 }
