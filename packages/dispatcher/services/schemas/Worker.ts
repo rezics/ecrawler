@@ -1,9 +1,11 @@
 import {Schema} from "effect"
-import Task from "./Task.ts"
+import {Task} from "./Task.ts"
 
 const TaskWithoutAssignment = Task.pipe(Schema.omit("assignment"))
 
-export default Schema.Struct({
+export class Worker extends Schema.Class<Worker>("Worker")({
 	id: Schema.UUID,
-	tasks: TaskWithoutAssignment.pipe(Schema.Array)
-})
+	tasks: Schema.Array(TaskWithoutAssignment)
+}) {}
+
+export default Worker

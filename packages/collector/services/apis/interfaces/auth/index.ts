@@ -1,19 +1,19 @@
 import {HttpApiMiddleware, HttpApiSecurity} from "@effect/platform"
-import {Schema, Context} from "effect"
+import {Effect, Schema} from "effect"
 
-const Worker = Schema.Struct({id: Schema.UUID})
+export const WorkerIdentity = Schema.Struct({id: Schema.UUID})
+export type WorkerIdentity = typeof WorkerIdentity.Type
 
 export class AuthError extends Schema.TaggedError<AuthError>()("AuthError", {
 	message: Schema.String
 }) {}
 
-export class WorkerSecurity extends Context.Tag("WorkerSecurity")<
-	WorkerSecurity,
-	typeof Worker.Type
->() {}
+export class WorkerSecurity extends Effect.Tag(
+	"@ecrawler/collector/WorkerSecurity"
+)<WorkerSecurity, WorkerIdentity>() {}
 
 export class WorkerAuth extends HttpApiMiddleware.Tag<WorkerAuth>()(
-	"WorkerAuth",
+	"@ecrawler/collector/WorkerAuth",
 	{
 		failure: AuthError,
 		provides: WorkerSecurity,

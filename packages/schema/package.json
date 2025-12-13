@@ -1,0 +1,8 @@
+{
+  "name": "@ecrawler/schema",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./*": "./src/*"
+  }
+}

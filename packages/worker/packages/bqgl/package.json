@@ -1,0 +1,11 @@
+{
+  "name": "@ecrawler/bqgl",
+  "type": "module",
+  "private": true,
+  "exports": "./index.ts",
+  "dependencies": {
+    "@ecrawler/worker": "workspace:^",
+    "crawlee": "^3.15.3",
+    "playwright": "^1.57.0"
+  }
+}

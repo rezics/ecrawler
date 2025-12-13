@@ -1,5 +1,5 @@
 import {HttpApiEndpoint, HttpApiGroup} from "@effect/platform"
-import Result from "../../../schemas/Result.ts"
+import {Result, ResultError} from "../../../schemas/Result.ts"
 import {Schema} from "effect"
 
 export class ResultNotFoundError extends Schema.TaggedError<ResultNotFoundError>()(
@@ -7,38 +7,40 @@ export class ResultNotFoundError extends Schema.TaggedError<ResultNotFoundError>
 	{message: Schema.String}
 ) {}
 
-const SubmitSuccessPayload = Schema.Struct({
+export const SubmitSuccessPayload = Schema.Struct({
 	taskId: Schema.UUID,
 	data: Schema.Object
 })
 
-const SubmitFailurePayload = Schema.Struct({
+export const SubmitFailurePayload = Schema.Struct({
 	taskId: Schema.UUID,
-	error: Schema.Struct({type: Schema.String, message: Schema.String})
+	error: ResultError
 })
 
-const QueryParams = Schema.Struct({
-	taskId: Schema.String.pipe(Schema.optional),
-	status: Schema.String.pipe(Schema.optional),
-	limit: Schema.NumberFromString.pipe(Schema.optional),
-	offset: Schema.NumberFromString.pipe(Schema.optional)
+export const QueryParams = Schema.Struct({
+	taskId: Schema.optional(Schema.String),
+	status: Schema.optional(Schema.String),
+	limit: Schema.optional(Schema.NumberFromString),
+	offset: Schema.optional(Schema.NumberFromString)
 })
 
-export default HttpApiGroup.make("Results")
+export const ResultIdResponse = Schema.Struct({id: Schema.UUID})
+
+export const ResultsApi = HttpApiGroup.make("Results")
 	.add(
 		HttpApiEndpoint.post("submitSuccess")`/success`
 			.setPayload(SubmitSuccessPayload)
-			.addSuccess(Result.pick("id"))
+			.addSuccess(ResultIdResponse)
 	)
 	.add(
 		HttpApiEndpoint.post("submitFailure")`/failure`
 			.setPayload(SubmitFailurePayload)
-			.addSuccess(Result.pick("id"))
+			.addSuccess(ResultIdResponse)
 	)
 	.add(
 		HttpApiEndpoint.get("list")`/`
 			.setUrlParams(QueryParams)
-			.addSuccess(Result.pipe(Schema.Array))
+			.addSuccess(Schema.Array(Result))
 	)
 	.add(
 		HttpApiEndpoint.get("get")`/:id`
@@ -52,3 +54,5 @@ export default HttpApiGroup.make("Results")
 			.addSuccess(Schema.Void)
 			.addError(ResultNotFoundError)
 	)
+
+export default ResultsApi

@@ -4,32 +4,33 @@ import {NodeHttpServer} from "@effect/platform-node"
 import {Effect, Layer} from "effect"
 import {createServer} from "node:http"
 
-import DispatcherApi from "./services/apis/index.ts"
-import TasksApiLive from "./services/apis/implements/tasks.ts"
-import WorkerAuthLive from "./services/apis/implements/auth.ts"
-import DatabaseLive from "./services/databases/index.ts"
-import DispatcherConfig from "./services/configs/index.ts"
-const ConfigLive = DispatcherConfig.Default
+import {DispatcherApi} from "./services/apis/index.ts"
+import {TasksApiLive} from "./services/apis/implements/tasks.ts"
+import {WorkerAuthLive} from "./services/apis/implements/auth.ts"
+import {DatabaseLive} from "./services/databases/index.ts"
+import {DispatcherConfig} from "./services/configs/index.ts"
+
 const ApiLive = HttpApiBuilder.api(DispatcherApi).pipe(
 	Layer.provide(TasksApiLive)
 )
+
 const HttpServerLive = Layer.unwrapEffect(
-	Effect.gen(function* () {
-		const config = yield* DispatcherConfig
-		return NodeHttpServer.layer(createServer, {port: config.port})
-	})
+	Effect.map(DispatcherConfig, config =>
+		NodeHttpServer.layer(createServer, {port: config.port})
+	)
 )
+
 const ServerLive = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
 	Layer.provide(ApiLive),
 	Layer.provide(WorkerAuthLive),
 	Layer.provide(DatabaseLive),
 	HttpServer.withLogAddress,
 	Layer.provide(HttpServerLive),
-	Layer.provide(ConfigLive)
+	Layer.provide(DispatcherConfig.Default)
 )
 
-const Main = Effect.gen(function* () {
+const main = Effect.gen(function* () {
 	yield* Effect.logInfo("Starting Dispatcher Server...")
 })
 
-Main.pipe(Effect.provide(ServerLive), NodeRuntime.runMain)
+main.pipe(Effect.provide(ServerLive), NodeRuntime.runMain)

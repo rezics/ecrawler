@@ -1,25 +1,27 @@
-import {Effect, Layer, Redacted} from "effect"
-import {WorkerAuth, AuthError} from "../interfaces/auth/index.ts"
-import {Schema} from "effect"
+import {Effect, Layer, Redacted, Schema} from "effect"
+import {
+	WorkerAuth,
+	AuthError,
+	WorkerIdentity
+} from "../interfaces/auth/index.ts"
 
-const Worker = Schema.Struct({id: Schema.UUID})
+const UUID_REGEX =
+	/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-const WorkerAuthLive = Layer.succeed(
+export const WorkerAuthLive = Layer.succeed(
 	WorkerAuth,
 	WorkerAuth.of({
 		bearer: token =>
 			Effect.gen(function* () {
-				// 简单验证 token 是否为有效的 UUID 格式
 				const tokenValue = Redacted.value(token)
-				const uuidRegex =
-					/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-				if (!uuidRegex.test(tokenValue)) {
+				if (!UUID_REGEX.test(tokenValue)) {
 					return yield* Effect.fail(
 						new AuthError({message: "Invalid token format"})
 					)
 				}
-
-				return Schema.decodeUnknownSync(Worker)({id: tokenValue})
+				return Schema.decodeUnknownSync(WorkerIdentity)({
+					id: tokenValue
+				})
 			})
 	})
 )

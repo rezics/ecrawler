@@ -1,8 +1,10 @@
 import {Schema} from "effect"
 
-export default Schema.Struct({
+export class Task extends Schema.Class<Task>("Task")({
 	id: Schema.UUID,
-	tags: Schema.String.pipe(Schema.Array),
-	assignment: Schema.UUID,
+	tags: Schema.Array(Schema.String),
+	assignment: Schema.optionalWith(Schema.UUID, {as: "Option"}),
 	payload: Schema.Object
-})
+}) {}
+
+export default Task

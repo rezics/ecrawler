@@ -1,10 +1,9 @@
 import {SqlClient} from "@effect/sql"
-import {Effect, Layer} from "effect"
+import {Effect, Layer, Schema} from "effect"
 import {WorkerAuth, AuthError} from "../interfaces/auth/index.ts"
-import Worker from "../../schemas/Worker.ts"
-import {Schema} from "effect"
+import {Worker} from "../../schemas/Worker.ts"
 
-const WorkerAuthLive = Layer.effect(
+export const WorkerAuthLive = Layer.effect(
 	WorkerAuth,
 	Effect.gen(function* () {
 		const sql = yield* SqlClient.SqlClient
@@ -13,16 +12,13 @@ const WorkerAuthLive = Layer.effect(
 			bearer: token =>
 				Effect.gen(function* () {
 					const result = yield* sql`
-						SELECT id
-						FROM workers
-						WHERE id = ${token}
+						SELECT id FROM workers WHERE id = ${token}
 					`
 					if (result.length === 0) {
 						return yield* Effect.fail(
 							new AuthError({message: "Invalid or expired token"})
 						)
 					}
-
 					const worker = result[0]!
 					return Schema.decodeUnknownSync(Worker)({
 						id: worker["id"],

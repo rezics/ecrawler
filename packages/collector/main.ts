@@ -4,23 +4,20 @@ import {NodeHttpServer} from "@effect/platform-node"
 import {Effect, Layer} from "effect"
 import {createServer} from "node:http"
 
-import CollectorApi from "./services/apis/index.ts"
-import ResultsApiLive from "./services/apis/implements/results.ts"
-import WorkerAuthLive from "./services/apis/implements/auth.ts"
-import DatabaseLive from "./services/databases/index.ts"
-import CollectorConfig from "./services/configs/index.ts"
-
-const ConfigLive = CollectorConfig.Default
+import {CollectorApi} from "./services/apis/index.ts"
+import {ResultsApiLive} from "./services/apis/implements/results.ts"
+import {WorkerAuthLive} from "./services/apis/implements/auth.ts"
+import {DatabaseLive} from "./services/databases/index.ts"
+import {CollectorConfig} from "./services/configs/index.ts"
 
 const ApiLive = HttpApiBuilder.api(CollectorApi).pipe(
 	Layer.provide(ResultsApiLive)
 )
 
 const HttpServerLive = Layer.unwrapEffect(
-	Effect.gen(function* () {
-		const config = yield* CollectorConfig
-		return NodeHttpServer.layer(createServer, {port: config.port})
-	})
+	Effect.map(CollectorConfig, config =>
+		NodeHttpServer.layer(createServer, {port: config.port})
+	)
 )
 
 const ServerLive = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
@@ -29,11 +26,11 @@ const ServerLive = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
 	Layer.provide(DatabaseLive),
 	HttpServer.withLogAddress,
 	Layer.provide(HttpServerLive),
-	Layer.provide(ConfigLive)
+	Layer.provide(CollectorConfig.Default)
 )
 
-const Main = Effect.gen(function* () {
+const main = Effect.gen(function* () {
 	yield* Effect.logInfo("Starting Collector Server...")
 })
 
-Main.pipe(Effect.provide(ServerLive), NodeRuntime.runMain)
+main.pipe(Effect.provide(ServerLive), NodeRuntime.runMain)

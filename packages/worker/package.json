@@ -1,0 +1,23 @@
+{
+  "name": "@ecrawler/worker",
+  "module": "main.ts",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "./packages/*"
+  ],
+  "scripts": {
+    "start": "bun run main.ts",
+    "dev": "bun --watch main.ts"
+  },
+  "exports": {
+    ".": "./main.ts",
+    "./interfaces": "./interfaces.ts",
+    "./schemas/*": "./services/schemas/*.ts"
+  },
+  "dependencies": {
+    "@ecrawler/collector": "workspace:^",
+    "@ecrawler/dispatcher": "workspace:^",
+    "@ecrawler/schema": "workspace:^"
+  }
+}
