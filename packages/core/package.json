@@ -1,0 +1,12 @@
+{
+    "name": "@ecrawler/core",
+    "type": "module",
+    "private": true,
+    "exports": {
+        "./errors": "./src/errors/index.ts",
+        "./auth": "./src/auth/index.ts",
+        "./database": "./src/database/index.ts",
+        "./server": "./src/server/index.ts",
+        "./config": "./src/config/index.ts"
+    }
+}

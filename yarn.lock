@@ -438,52 +438,111 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ecrawler/bqgl@workspace:packages/worker/packages/bqgl":
+"@ecrawler/api@workspace:*, @ecrawler/api@workspace:packages/api":
   version: 0.0.0-use.local
-  resolution: "@ecrawler/bqgl@workspace:packages/worker/packages/bqgl"
+  resolution: "@ecrawler/api@workspace:packages/api"
   dependencies:
-    "@ecrawler/worker": "workspace:^"
-    crawlee: "npm:^3.15.3"
-    playwright: "npm:^1.57.0"
+    "@ecrawler/core": "workspace:*"
+    "@ecrawler/schemas": "workspace:*"
   languageName: unknown
   linkType: soft
 
-"@ecrawler/collector@workspace:^, @ecrawler/collector@workspace:packages/collector":
+"@ecrawler/collector@workspace:packages/collector":
   version: 0.0.0-use.local
   resolution: "@ecrawler/collector@workspace:packages/collector"
-  languageName: unknown
-  linkType: soft
-
-"@ecrawler/dispatcher@workspace:^, @ecrawler/dispatcher@workspace:packages/dispatcher":
-  version: 0.0.0-use.local
-  resolution: "@ecrawler/dispatcher@workspace:packages/dispatcher"
-  languageName: unknown
-  linkType: soft
-
-"@ecrawler/qidian@workspace:packages/worker/packages/qidian":
-  version: 0.0.0-use.local
-  resolution: "@ecrawler/qidian@workspace:packages/worker/packages/qidian"
   dependencies:
+    "@ecrawler/api": "workspace:*"
+    "@ecrawler/core": "workspace:*"
+    "@ecrawler/schemas": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
+"@ecrawler/core@workspace:*, @ecrawler/core@workspace:packages/core":
+  version: 0.0.0-use.local
+  resolution: "@ecrawler/core@workspace:packages/core"
+  languageName: unknown
+  linkType: soft
+
+"@ecrawler/crawler-bqgl@workspace:packages/crawlers/bqgl":
+  version: 0.0.0-use.local
+  resolution: "@ecrawler/crawler-bqgl@workspace:packages/crawlers/bqgl"
+  dependencies:
+    "@ecrawler/schemas": "workspace:*"
+    "@ecrawler/worker": "workspace:*"
     crawlee: "npm:^3.15.3"
     playwright: "npm:^1.57.0"
   languageName: unknown
   linkType: soft
 
-"@ecrawler/schema@workspace:^, @ecrawler/schema@workspace:packages/schema":
+"@ecrawler/crawler-qidian@workspace:packages/crawlers/qidian":
   version: 0.0.0-use.local
-  resolution: "@ecrawler/schema@workspace:packages/schema"
+  resolution: "@ecrawler/crawler-qidian@workspace:packages/crawlers/qidian"
+  dependencies:
+    "@ecrawler/schemas": "workspace:*"
+    "@ecrawler/worker": "workspace:*"
+    crawlee: "npm:^3.15.3"
+    playwright: "npm:^1.57.0"
   languageName: unknown
   linkType: soft
 
-"@ecrawler/worker@workspace:^, @ecrawler/worker@workspace:packages/worker":
+"@ecrawler/dispatcher@workspace:packages/dispatcher":
+  version: 0.0.0-use.local
+  resolution: "@ecrawler/dispatcher@workspace:packages/dispatcher"
+  dependencies:
+    "@ecrawler/api": "workspace:*"
+    "@ecrawler/core": "workspace:*"
+    "@ecrawler/schemas": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
+"@ecrawler/schemas@workspace:*, @ecrawler/schemas@workspace:packages/schemas":
+  version: 0.0.0-use.local
+  resolution: "@ecrawler/schemas@workspace:packages/schemas"
+  languageName: unknown
+  linkType: soft
+
+"@ecrawler/worker@workspace:*, @ecrawler/worker@workspace:packages/worker":
   version: 0.0.0-use.local
   resolution: "@ecrawler/worker@workspace:packages/worker"
   dependencies:
-    "@ecrawler/collector": "workspace:^"
-    "@ecrawler/dispatcher": "workspace:^"
-    "@ecrawler/schema": "workspace:^"
+    "@ecrawler/api": "workspace:*"
+    "@ecrawler/schemas": "workspace:*"
   languageName: unknown
   linkType: soft
+
+"@effect/cluster@npm:^0.55.0":
+  version: 0.55.0
+  resolution: "@effect/cluster@npm:0.55.0"
+  dependencies:
+    kubernetes-types: "npm:^1.30.0"
+  peerDependencies:
+    "@effect/platform": ^0.93.6
+    "@effect/rpc": ^0.72.2
+    "@effect/sql": ^0.48.6
+    "@effect/workflow": ^0.15.0
+    effect: ^3.19.8
+  checksum: 10c0/0c33f8b8d25d2f4cbdfc56ec5c89151a57767ec064d83804551d36604ee6550f3506acf1a6eea31477c79462ba746c351017e139fca45c5d77d98e704e600219
+  languageName: node
+  linkType: hard
+
+"@effect/experimental@npm:^0.57.11":
+  version: 0.57.11
+  resolution: "@effect/experimental@npm:0.57.11"
+  dependencies:
+    uuid: "npm:^11.0.3"
+  peerDependencies:
+    "@effect/platform": ^0.93.6
+    effect: ^3.19.9
+    ioredis: ^5
+    lmdb: ^3
+  peerDependenciesMeta:
+    ioredis:
+      optional: true
+    lmdb:
+      optional: true
+  checksum: 10c0/6d2f77c91eac3c6e5a5744a4904ce5dbc1a2079efa0eafd1174827368c0d954a96f04a489601b4fbbd19f2e0134319b554d373b95b8dc565513799b0827f2a5a
+  languageName: node
+  linkType: hard
 
 "@effect/language-service@npm:^0.62.1":
   version: 0.62.1
@@ -582,6 +641,18 @@ __metadata:
     "@effect/platform": ^0.93.6
     effect: ^3.19.8
   checksum: 10c0/57de413236142123071629fbc42fcb5dc0e2a261b2ec3a7a2c97a8271c34ee93b600b45c3c47f21d743ad36425bd52c22270fa938835cb0ee75d2fbae63e9c61
+  languageName: node
+  linkType: hard
+
+"@effect/workflow@npm:^0.15.2":
+  version: 0.15.2
+  resolution: "@effect/workflow@npm:0.15.2"
+  peerDependencies:
+    "@effect/experimental": ^0.57.11
+    "@effect/platform": ^0.93.6
+    "@effect/rpc": ^0.72.2
+    effect: ^3.19.10
+  checksum: 10c0/722ce97355bd9dd96fadc94053693bee63ea5c252ce5fc84b47a06f2ccfe7cc63dc14827664023e124693721382774dc76a43828c2c3e44afa91a8ea01884502
   languageName: node
   linkType: hard
 
@@ -1733,12 +1804,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "ecrawler@workspace:."
   dependencies:
+    "@effect/cluster": "npm:^0.55.0"
+    "@effect/experimental": "npm:^0.57.11"
     "@effect/language-service": "npm:^0.62.1"
     "@effect/platform": "npm:^0.93.8"
     "@effect/platform-node": "npm:^0.103.0"
     "@effect/rpc": "npm:^0.72.2"
     "@effect/sql": "npm:^0.48.6"
     "@effect/sql-pg": "npm:^0.49.7"
+    "@effect/workflow": "npm:^0.15.2"
     "@types/node": "npm:^25.0.1"
     effect: "npm:^3.19.12"
     tsx: "npm:^4.21.0"
@@ -2587,6 +2661,13 @@ __metadata:
   dependencies:
     "@keyv/serialize": "npm:^1.1.1"
   checksum: 10c0/d0b8c5ffbfbaa98055e14b3c58ecf92fec2f8c4ad2a2a35fff1a146e82444ae0b969918fb6ab3281f6c16282cafb1239cc115c953cadf12838f1c45a97a5e2b8
+  languageName: node
+  linkType: hard
+
+"kubernetes-types@npm:^1.30.0":
+  version: 1.30.0
+  resolution: "kubernetes-types@npm:1.30.0"
+  checksum: 10c0/de3641e4f50cfc123c4102a73c12932e1db8e51783c7cae4ea8ad3561bd56fab0f1c2346801f84a4c36aae8cea0b25d21e9514cc0fcecd4d64b1314043263076
   languageName: node
   linkType: hard
 

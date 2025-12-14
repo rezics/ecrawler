@@ -1,0 +1,14 @@
+{
+    "name": "@ecrawler/api",
+    "type": "module",
+    "private": true,
+    "exports": {
+        ".": "./src/index.ts",
+        "./collector": "./src/collector/index.ts",
+        "./dispatcher": "./src/dispatcher/index.ts"
+    },
+    "dependencies": {
+        "@ecrawler/core": "workspace:*",
+        "@ecrawler/schemas": "workspace:*"
+    }
+}

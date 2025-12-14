@@ -1,23 +1,17 @@
 {
   "name": "@ecrawler/worker",
-  "module": "main.ts",
   "type": "module",
   "private": true,
-  "workspaces": [
-    "./packages/*"
-  ],
   "scripts": {
-    "start": "bun run main.ts",
-    "dev": "bun --watch main.ts"
+    "start": "bun run src/main.ts",
+    "dev": "bun --watch src/main.ts"
   },
   "exports": {
-    ".": "./main.ts",
-    "./interfaces": "./interfaces.ts",
-    "./schemas/*": "./services/schemas/*.ts"
+    ".": "./src/main.ts",
+    "./interfaces": "./src/interfaces.ts"
   },
   "dependencies": {
-    "@ecrawler/collector": "workspace:^",
-    "@ecrawler/dispatcher": "workspace:^",
-    "@ecrawler/schema": "workspace:^"
+    "@ecrawler/api": "workspace:*",
+    "@ecrawler/schemas": "workspace:*"
   }
 }
