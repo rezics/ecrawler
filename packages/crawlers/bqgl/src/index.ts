@@ -1,77 +1,60 @@
-import {Effect, flow, Layer, Queue, Stream} from "effect"
-import {Worker} from "@ecrawler/worker/interfaces"
-import {PlaywrightCrawler} from "crawlee"
+import {Effect, Queue, Stream} from "effect"
+import type {Worker} from "@ecrawler/worker/interfaces"
+import {CheerioCrawler} from "crawlee"
 import {Book} from "@ecrawler/schemas"
+import {isNotUndefined} from "effect/Predicate"
+import {endsWith, includes, isNonEmpty} from "effect/String"
 
-const extractBookId = (url: string): string | undefined => {
-	const match = url.match(/look\/(\d+)/)
-	return match?.[1]
-}
+export default {
+	tag: "bqgl",
+	identifier: endsWith("bqgl.cc"),
+	transformer: url =>
+		Stream.unwrapScoped(
+			Effect.gen(function* () {
+				const queue = yield* Queue.unbounded<Book>()
+				const crawler = yield* Effect.acquireRelease(
+					Effect.sync(
+						() =>
+							new CheerioCrawler({
+								requestHandler: async ({$, request}) =>
+									Effect.gen(function* () {
+										const dirid = yield* Effect.sync(() => request.url.match(/look\/(\d+)/)?.[1]).pipe(Effect.filterOrFail(isNotUndefined, () => "No book id found"))
 
-const Crawler = (queue: Queue.Queue<Book>) =>
-	Effect.acquireRelease(
-		Effect.succeed(
-			new PlaywrightCrawler({
-				requestHandler: async ({request}) =>
+										const book: Book = {
+											cover: yield* Effect.sync(() => $("body > div.book > div.info > div.cover > img").attr()?.["href"]).pipe(
+												Effect.filterOrFail(isNotUndefined, () => "No cover found")
+											),
+											title: yield* Effect.sync(() => $("body > div.book > div.info > h1").text()).pipe(Effect.filterOrFail(isNonEmpty, () => "No title found")),
+											authors: yield* Effect.sync(() => $("body > div.book > div.info > div.small > span:nth-child(1)").text()).pipe(
+												Effect.map(author => (isNonEmpty(author) ? [author] : undefined))
+											),
+											description: yield* Effect.sync(() => $("body > div.book > div.info > div.intro > dl > dd").text()).pipe(
+												Effect.filterOrFail(isNotUndefined, () => "No description found")
+											),
+											identifiers: {
+												url: request.url,
+												dirid
+											},
+											languages: "zh-CN",
+											ongoing: yield* Effect.sync(() => $("body > div.book > div.info > div.small > span:nth-child(2)").text()).pipe(
+												Effect.filterOrFail(isNonEmpty, () => "No ongoing status found"),
+												Effect.map(includes("连载"))
+											)
+										}
+
+										yield* Queue.offer(queue, book)
+									}).pipe(Effect.runPromise)
+							})
+					),
+					crawler => Effect.promise(() => crawler.teardown())
+				)
+
+				return Stream.mapConcatEffect(url, url =>
 					Effect.gen(function* () {
-						const bookId = extractBookId(request.url)
-						if (!bookId) {
-							return
-						}
-
-						const apiUrl = `https://www.46f1e.icu/api/book?id=${bookId}`
-
-						const response: {
-							id: string
-							title: string
-							sortname: string
-							author: string
-							full: string
-							intro: string
-							lastchapterid: string
-							lastchapter: string
-							lastupdate: string
-							dirid: string
-						} = yield* Effect.promise(() =>
-							fetch(apiUrl).then(res => res.json())
-						)
-
-						const book: Book = {
-							title: response.title,
-							authors: [response.author],
-							description: response.intro,
-							identifiers: {
-								url: request.url,
-								dirid: response.dirid
-							},
-							ongoing: response.full === "连载"
-						}
-
-						yield* Queue.offer(queue, book)
-					}).pipe(Effect.runPromise)
-			})
-		),
-		crawler => Effect.promise(() => crawler.teardown())
-	)
-
-export default Layer.scoped(
-	Worker,
-	Effect.gen(function* () {
-		const queue = yield* Queue.unbounded<Book>()
-		const crawler = yield* Crawler(queue)
-
-		return Worker.of({
-			tag: "bqgl",
-			identifier: /.*bqgl\.cc/,
-			transformer: flow(
-				Stream.map((input: unknown) => String(input)),
-				Stream.mapConcatEffect((url: string) =>
-					Effect.gen(function* () {
-						crawler.addRequests([url])
+						yield* Effect.promise(() => crawler.addRequests([String(url)]))
 						return yield* Queue.takeAll(queue)
 					})
 				)
-			)
-		})
-	})
-)
+			})
+		)
+} as const satisfies Worker

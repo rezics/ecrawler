@@ -1,38 +1,30 @@
 import {HttpApiBuilder} from "@effect/platform"
-import {SqlClient} from "@effect/sql"
-import {Effect, Option, Schema} from "effect"
+import {Effect, Schema} from "effect"
+import {and, desc, eq} from "drizzle-orm"
 import {CollectorApi, ResultNotFoundError} from "@ecrawler/api/collector"
 import {Result} from "@ecrawler/schemas"
-import {mapSqlError} from "@ecrawler/core/database"
+import {mapSqlError, PgDrizzle, schema} from "@ecrawler/core/database"
 import {WorkerSecurity} from "@ecrawler/core/auth"
-
-const decodeResult = (row: Record<string, unknown>) =>
-	Schema.decodeUnknownSync(Result)({
-		id: row["id"],
-		taskId: row["task_id"],
-		workerId: row["worker_id"],
-		status: row["status"],
-		data: row["data"],
-		error: row["error"] ? Option.some(row["error"]) : Option.none(),
-		collectedAt: row["collected_at"]
-	})
 
 export const ResultsHandler = HttpApiBuilder.group(
 	CollectorApi,
 	"Results",
 	handlers =>
 		Effect.gen(function* () {
-			const sql = yield* SqlClient.SqlClient
+			const db = yield* PgDrizzle
 
 			return handlers
 				.handle("submitSuccess", ({payload}) =>
 					Effect.gen(function* () {
 						const worker = yield* WorkerSecurity
 						const id = crypto.randomUUID()
-						yield* sql`
-							INSERT INTO results (id, task_id, worker_id, status, data)
-							VALUES (${id}, ${payload.taskId}, ${worker.id}, ${"success"}, ${JSON.stringify(payload.data)})
-						`
+						yield* db.insert(schema.results).values({
+							id,
+							taskId: payload.taskId,
+							workerId: worker.id,
+							status: "success",
+							data: payload.data
+						})
 						return {id}
 					}).pipe(mapSqlError)
 				)
@@ -40,10 +32,14 @@ export const ResultsHandler = HttpApiBuilder.group(
 					Effect.gen(function* () {
 						const worker = yield* WorkerSecurity
 						const id = crypto.randomUUID()
-						yield* sql`
-							INSERT INTO results (id, task_id, worker_id, status, data, error)
-							VALUES (${id}, ${payload.taskId}, ${worker.id}, ${"failure"}, ${JSON.stringify({})}, ${JSON.stringify(payload.error)})
-						`
+						yield* db.insert(schema.results).values({
+							id,
+							taskId: payload.taskId,
+							workerId: worker.id,
+							status: "failure",
+							data: {},
+							error: payload.error
+						})
 						return {id}
 					}).pipe(mapSqlError)
 				)
@@ -52,47 +48,49 @@ export const ResultsHandler = HttpApiBuilder.group(
 						const limit = urlParams.limit ?? 100
 						const offset = urlParams.offset ?? 0
 
-						const result = urlParams.taskId
-							? urlParams.status
-								? yield* sql`
-									SELECT id, task_id, worker_id, status, data, error, collected_at
-									FROM results
-									WHERE task_id = ${urlParams.taskId} AND status = ${urlParams.status}
-									ORDER BY collected_at DESC
-									LIMIT ${limit} OFFSET ${offset}
-								`
-								: yield* sql`
-									SELECT id, task_id, worker_id, status, data, error, collected_at
-									FROM results
-									WHERE task_id = ${urlParams.taskId}
-									ORDER BY collected_at DESC
-									LIMIT ${limit} OFFSET ${offset}
-								`
-							: urlParams.status
-							? yield* sql`
-									SELECT id, task_id, worker_id, status, data, error, collected_at
-									FROM results
-									WHERE status = ${urlParams.status}
-									ORDER BY collected_at DESC
-									LIMIT ${limit} OFFSET ${offset}
-								`
-							: yield* sql`
-									SELECT id, task_id, worker_id, status, data, error, collected_at
-									FROM results
-									ORDER BY collected_at DESC
-									LIMIT ${limit} OFFSET ${offset}
-								`
+						const conditions = []
+						if (urlParams.taskId) {
+							conditions.push(
+								eq(schema.results.taskId, urlParams.taskId)
+							)
+						}
+						if (urlParams.status) {
+							conditions.push(
+								eq(schema.results.status, urlParams.status)
+							)
+						}
 
-						return result.map(decodeResult)
+						const query = db
+							.select()
+							.from(schema.results)
+							.orderBy(desc(schema.results.collectedAt))
+							.limit(limit)
+							.offset(offset)
+
+						const result =
+							conditions.length > 0
+								? yield* query.where(and(...conditions))
+								: yield* query
+
+						return result.map(row =>
+							Schema.decodeUnknownSync(Result)({
+								id: row.id,
+								taskId: row.taskId,
+								workerId: row.workerId,
+								status: row.status,
+								data: row.data,
+								error: row.error,
+								collectedAt: row.collectedAt
+							})
+						)
 					}).pipe(mapSqlError)
 				)
 				.handle("get", ({path}) =>
 					Effect.gen(function* () {
-						const result = yield* sql`
-							SELECT id, task_id, worker_id, status, data, error, collected_at
-							FROM results
-							WHERE id = ${path.id}
-						`
+						const result = yield* db
+							.select()
+							.from(schema.results)
+							.where(eq(schema.results.id, path.id))
 						if (result.length === 0) {
 							return yield* Effect.fail(
 								new ResultNotFoundError({
@@ -100,14 +98,23 @@ export const ResultsHandler = HttpApiBuilder.group(
 								})
 							)
 						}
-						return decodeResult(result[0]!)
+						return Schema.decodeUnknownSync(Result)({
+							id: result[0]!.id,
+							taskId: result[0]!.taskId,
+							workerId: result[0]!.workerId,
+							status: result[0]!.status,
+							data: result[0]!.data,
+							error: result[0]!.error,
+							collectedAt: result[0]!.collectedAt
+						})
 					}).pipe(mapSqlError)
 				)
 				.handle("delete", ({path}) =>
 					Effect.gen(function* () {
-						const result = yield* sql`
-							DELETE FROM results WHERE id = ${path.id} RETURNING id
-						`
+						const result = yield* db
+							.delete(schema.results)
+							.where(eq(schema.results.id, path.id))
+							.returning({id: schema.results.id})
 						if (result.length === 0) {
 							return yield* Effect.fail(
 								new ResultNotFoundError({

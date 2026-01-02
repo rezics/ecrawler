@@ -13,7 +13,7 @@ export class Result extends Schema.Class<Result>("Result")({
 	taskId: Schema.UUID,
 	workerId: Schema.UUID,
 	status: ResultStatus,
-	data: Schema.Object,
+	data: Schema.Record({key: Schema.String, value: Schema.Unknown}),
 	error: Schema.optionalWith(ResultError, {as: "Option"}),
 	collectedAt: Schema.DateTimeUtc
 }) {}

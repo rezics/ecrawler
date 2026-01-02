@@ -5,7 +5,7 @@ export class WorkerRegistration extends Schema.Class<WorkerRegistration>(
 )({
 	id: Schema.UUID,
 	tags: Schema.Array(Schema.String),
-	lastSeen: Schema.DateTimeUtc
+	lastSeen: Schema.Date
 }) {}
 
 export type WorkerRegistrationType = typeof WorkerRegistration.Type

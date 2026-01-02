@@ -13,7 +13,15 @@ export const NextTaskPayload = Schema.Struct({
 
 export const TaskIdResponse = Schema.Struct({id: Schema.UUID})
 
-const TaskWithoutAssignment = Task.pipe(Schema.omit("assignment"))
+export const ReleaseTimedOutPayload = Schema.Struct({
+	timeoutMinutes: Schema.optional(Schema.Number)
+})
+
+export const ReleaseTimedOutResponse = Schema.Struct({
+	releasedCount: Schema.Number
+})
+
+const TaskWithoutAssignment = Task.pipe(Schema.omit("assignment", "assignedAt"))
 
 export const TasksApi = HttpApiGroup.make("Tasks")
 	.add(
@@ -30,5 +38,16 @@ export const TasksApi = HttpApiGroup.make("Tasks")
 		HttpApiEndpoint.get("next-task")`/`
 			.setPayload(NextTaskPayload)
 			.addSuccess(TaskWithoutAssignment)
+			.addError(TaskNotFoundError)
+	)
+	.add(
+		HttpApiEndpoint.post("release-timed-out")`/release-timed-out`
+			.setPayload(ReleaseTimedOutPayload)
+			.addSuccess(ReleaseTimedOutResponse)
+	)
+	.add(
+		HttpApiEndpoint.post("complete-task")`/complete`
+			.setPayload(TaskIdResponse)
+			.addSuccess(Schema.Void)
 			.addError(TaskNotFoundError)
 	)

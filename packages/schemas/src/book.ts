@@ -10,7 +10,7 @@ export const IdentifierKey = Schema.Union(
 	Schema.String
 )
 
-const BookFields = Schema.Struct({
+export const Book = Schema.Struct({
 	cover: Schema.optional(Schema.String),
 	title: Schema.optional(Schema.String),
 	authors: Schema.optional(Schema.Array(Schema.String)),
@@ -26,6 +26,4 @@ const BookFields = Schema.Struct({
 	subjects: Schema.optional(Schema.Array(Schema.String))
 })
 
-export class Book extends Schema.Class<Book>("Book")(BookFields.fields) {}
-
-export type BookType = typeof Book.Type
+export type Book = typeof Book.Type

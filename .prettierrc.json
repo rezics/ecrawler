@@ -1,4 +1,12 @@
 {
+	"overrides": [
+		{
+			"files": "./packages/crawlers/**/*.ts",
+			"options": {
+				"printWidth": 200
+			}
+		}
+	],
 	"useTabs": true,
 	"tabWidth": 4,
 	"arrowParens": "avoid",

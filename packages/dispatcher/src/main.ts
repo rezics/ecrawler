@@ -6,12 +6,14 @@ import {createServer} from "node:http"
 
 import {DispatcherApi} from "@ecrawler/api/dispatcher"
 import {TasksHandler} from "./handlers/tasks.ts"
+import {WorkersHandler} from "./handlers/workers.ts"
 import {WorkerAuthLive} from "./auth.ts"
 import {DatabaseLive} from "./database/client.ts"
 import {DispatcherConfig} from "./config.ts"
 
 const ApiLive = HttpApiBuilder.api(DispatcherApi).pipe(
-	Layer.provide(TasksHandler)
+	Layer.provide(TasksHandler),
+	Layer.provide(WorkersHandler)
 )
 
 const HttpServerLive = Layer.unwrapEffect(

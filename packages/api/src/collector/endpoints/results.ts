@@ -9,7 +9,7 @@ export class ResultNotFoundError extends Schema.TaggedError<ResultNotFoundError>
 
 export const SubmitSuccessPayload = Schema.Struct({
 	taskId: Schema.UUID,
-	data: Schema.Object
+	data: Schema.Record({key: Schema.String, value: Schema.Unknown})
 })
 
 export const SubmitFailurePayload = Schema.Struct({

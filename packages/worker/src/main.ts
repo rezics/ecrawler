@@ -11,7 +11,7 @@ import {
 import {NodeRuntime} from "@effect/platform-node"
 import {NodeHttpClient} from "@effect/platform-node"
 import {WorkerConfig} from "./config.ts"
-import {Worker, type WorkerShape} from "./interfaces.ts"
+import type {Worker} from "./interfaces.ts"
 import {dispatcherClient, collectorClient} from "./clients/index.ts"
 
 const loadWorkers = (layers: readonly URL[]) =>
@@ -19,22 +19,21 @@ const loadWorkers = (layers: readonly URL[]) =>
 		layers,
 		Array.map(url => Effect.promise(() => import(url.toString()))),
 		Effect.all,
-		Effect.map(Array.map(i => i.default as Layer.Layer<Worker>)),
-		Effect.flatMap(workers =>
-			pipe(
-				workers,
-				Array.map(layer => Effect.provide(Worker, layer)),
-				Effect.all
-			)
-		)
+		Effect.map(Array.map(i => i.default as Worker))
 	)
 
-const findWorker = (workers: readonly WorkerShape[], payload: unknown) =>
-	Array.findFirst(workers, w => w.identifier.test(JSON.stringify(payload)))
+const matchIdentifier = (identifier: Worker["identifier"], value: string) =>
+	typeof identifier === "function"
+		? identifier(value)
+		: identifier.test(value)
+
+const findWorker = (workers: readonly Worker[], payload: unknown) =>
+	Array.findFirst(workers, w =>
+		matchIdentifier(w.identifier, JSON.stringify(payload))
+	)
 
 const processTask =
-	(workers: readonly WorkerShape[]) =>
-	(task: {id: string; payload: unknown}) =>
+	(workers: readonly Worker[]) => (task: {id: string; payload: unknown}) =>
 		pipe(
 			findWorker(workers, task.payload),
 			Option.match({
@@ -78,25 +77,37 @@ const processTask =
 		)
 
 const submitResult =
-	(collector: Effect.Effect.Success<typeof collectorClient>) =>
+	(
+		collector: Effect.Effect.Success<typeof collectorClient>,
+		dispatcher: Effect.Effect.Success<typeof dispatcherClient>
+	) =>
 	(result: {
 		taskId: string
 		result: Option.Option<readonly unknown[]>
 		error: Option.Option<{type: string; message: string}>
 	}) =>
-		Option.match(result.error, {
-			onSome: error =>
-				collector.Results.submitFailure({
-					payload: {taskId: result.taskId, error}
-				}),
-			onNone: () =>
-				collector.Results.submitSuccess({
-					payload: {
-						taskId: result.taskId,
-						data: {items: Option.getOrElse(result.result, () => [])}
-					}
+		pipe(
+			Option.match(result.error, {
+				onSome: error =>
+					collector.Results.submitFailure({
+						payload: {taskId: result.taskId, error}
+					}),
+				onNone: () =>
+					collector.Results.submitSuccess({
+						payload: {
+							taskId: result.taskId,
+							data: {
+								items: Option.getOrElse(result.result, () => [])
+							}
+						}
+					})
+			}),
+			Effect.flatMap(() =>
+				dispatcher.Tasks["complete-task"]({
+					payload: {id: result.taskId}
 				})
-		})
+			)
+		)
 
 const program = pipe(
 	Effect.all({
@@ -119,11 +130,35 @@ const program = pipe(
 		pipe(
 			dispatcher.Tasks["next-task"]({payload: {tags}}),
 			Effect.flatMap(processTask(workers)),
-			Effect.flatMap(submitResult(collector)),
+			Effect.flatMap(submitResult(collector, dispatcher)),
 			Effect.catchTag("TaskNotFoundError", () =>
 				Effect.sleep(Duration.seconds(5))
 			),
-			Effect.catchAll(error => Effect.logError(`Worker error: ${error}`)),
+			Effect.catchTag("AuthError", error =>
+				Effect.logError(`Authentication error: ${error.message}`).pipe(
+					Effect.andThen(Effect.fail(error))
+				)
+			),
+			Effect.catchTag("DatabaseError", error =>
+				Effect.logWarning(
+					`Database error (retrying): ${error.message}`
+				).pipe(Effect.andThen(Effect.sleep(Duration.seconds(10))))
+			),
+			Effect.catchAll(error => {
+				const errorMessage = String(error)
+				// Network errors are recoverable
+				if (
+					errorMessage.includes("ECONNREFUSED") ||
+					errorMessage.includes("ETIMEDOUT") ||
+					errorMessage.includes("fetch failed")
+				) {
+					return Effect.logWarning(
+						`Network error (retrying): ${errorMessage}`
+					).pipe(Effect.andThen(Effect.sleep(Duration.seconds(5))))
+				}
+				// Log other errors but continue
+				return Effect.logError(`Unexpected error: ${errorMessage}`)
+			}),
 			Effect.forever
 		)
 	),
