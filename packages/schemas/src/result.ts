@@ -1,21 +1,27 @@
 import {Schema} from "effect"
+import {Task} from "./task"
 
-export const ResultStatus = Schema.Literal("success", "failure")
-export type ResultStatus = typeof ResultStatus.Type
-
-export class ResultError extends Schema.Class<ResultError>("ResultError")({
-	type: Schema.String,
-	message: Schema.String
-}) {}
-
-export class Result extends Schema.Class<Result>("Result")({
-	id: Schema.UUID,
-	taskId: Schema.UUID,
-	workerId: Schema.UUID,
-	status: ResultStatus,
-	data: Schema.Record({key: Schema.String, value: Schema.Unknown}),
-	error: Schema.optionalWith(ResultError, {as: "Option"}),
-	collectedAt: Schema.DateTimeUtc
-}) {}
-
-export type ResultType = typeof Result.Type
+export const Result = Schema.extend(
+	Task,
+	Schema.Struct({
+		worker_id: Schema.UUID.annotations({
+			description:
+				"Identifier of the worker that produced this result\n\n产生此结果的工作节点的标识符"
+		}),
+		data: Schema.optional(Schema.Any).annotations({
+			description: "The collected result data\n\n收集到的结果数据"
+		}),
+		logs: Schema.Array(Schema.String)
+			.annotations({
+				description:
+					"Execution logs from the worker\n\n来自工作节点的执行日志"
+			})
+			.pipe(
+				Schema.optional,
+				Schema.withDecodingDefault(() => [])
+			)
+	})
+).annotations({
+	identifier: "Result",
+	description: "Schema representing a crawl result\n\n表示抓取结果的模式"
+})

@@ -1,19 +1,9 @@
-import {HttpApi} from "@effect/platform"
-import {TasksApi} from "./endpoints/tasks.ts"
-import {WorkersApi} from "./endpoints/workers.ts"
-import {WorkerAuth, AuthError} from "@ecrawler/core/auth"
-import {DatabaseError} from "@ecrawler/core/errors"
+import {HttpApi, OpenApi} from "@effect/platform"
+import root from "./groups/root"
 
-export const DispatcherApi = HttpApi.make("DispatcherApi")
-	.add(TasksApi)
-	.add(WorkersApi)
-	.addError(AuthError)
-	.addError(DatabaseError)
-	.middleware(WorkerAuth)
-
-export {TasksApi, TaskNotFoundError} from "./endpoints/tasks.ts"
-export {
-	WorkersApi,
-	WorkerNotFoundError,
-	WorkerAlreadyExistsError
-} from "./endpoints/workers.ts"
+export default HttpApi.make("Dispatcher")
+	.add(root)
+	.annotate(
+		OpenApi.Description,
+		"The Dispatcher API manages the crawl task queue and distributes tasks to workers.\n\nDispatcher API 管理抓取任务队列并将任务分配给工作节点。"
+	)

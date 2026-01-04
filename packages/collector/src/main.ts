@@ -10,25 +10,22 @@ import {WorkersHandler} from "./handlers/workers.ts"
 import {WorkerAuthLive} from "./auth.ts"
 import {DatabaseLive} from "./database/client.ts"
 import {CollectorConfig} from "./config.ts"
+import {ServerLive as CoreServerLive} from "@ecrawler/core/server/layer.ts"
 
 const ApiLive = HttpApiBuilder.api(CollectorApi).pipe(
 	Layer.provide(ResultsHandler),
 	Layer.provide(WorkersHandler)
 )
 
-const HttpServerLive = Layer.unwrapEffect(
-	Effect.map(CollectorConfig, config =>
-		NodeHttpServer.layer(createServer, {port: config.port})
+const ServerLive = CoreServerLive.pipe(
+	Layer.provide(
+		Layer.mergeAll(
+			ApiLive,
+			WorkerAuthLive,
+			DatabaseLive,
+			CollectorConfig.Default
+		)
 	)
-)
-
-const ServerLive = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
-	Layer.provide(ApiLive),
-	Layer.provide(WorkerAuthLive),
-	Layer.provide(DatabaseLive),
-	HttpServer.withLogAddress,
-	Layer.provide(HttpServerLive),
-	Layer.provide(CollectorConfig.Default)
 )
 
 const main = pipe(

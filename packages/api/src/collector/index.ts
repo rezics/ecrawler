@@ -1,15 +1,9 @@
-import {HttpApi} from "@effect/platform"
-import {ResultsApi} from "./endpoints/results.ts"
-import {WorkersApi} from "./endpoints/workers.ts"
-import {WorkerAuth, AuthError} from "@ecrawler/core/auth"
-import {DatabaseError} from "@ecrawler/core/errors"
+import {HttpApi, OpenApi} from "@effect/platform"
+import root from "./groups/root"
 
-export const CollectorApi = HttpApi.make("CollectorApi")
-	.add(ResultsApi)
-	.add(WorkersApi)
-	.addError(AuthError)
-	.addError(DatabaseError)
-	.middleware(WorkerAuth)
-
-export {ResultsApi, ResultNotFoundError} from "./endpoints/results.ts"
-export {WorkersApi, WorkerNotFoundError} from "./endpoints/workers.ts"
+export default HttpApi.make("Collector")
+	.add(root)
+	.annotate(
+		OpenApi.Description,
+		"The Collector API is responsible for receiving and storing the results of crawl tasks.\n\nCollector API 负责接收和存储抓取任务的结果。"
+	)

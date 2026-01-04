@@ -1,9 +1,8 @@
 {
-    "name": "@ecrawler/schemas",
-    "type": "module",
-    "private": true,
-    "exports": {
-        ".": "./src/index.ts",
-        "./*": "./src/*.ts"
-    }
+	"name": "@ecrawler/schemas",
+	"type": "module",
+	"private": true,
+	"exports": {
+		"./*": "./src/*.ts"
+	}
 }

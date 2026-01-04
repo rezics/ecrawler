@@ -11,19 +11,17 @@ export const IdentifierKey = Schema.Union(
 )
 
 export const Book = Schema.Struct({
-	cover: Schema.optional(Schema.String),
-	title: Schema.optional(Schema.String),
-	authors: Schema.optional(Schema.Array(Schema.String)),
-	description: Schema.optional(Schema.String),
-	languages: Schema.optional(Schema.String),
-	publisher: Schema.optional(Schema.String),
-	publishDate: Schema.optional(Schema.String),
-	length: Schema.optional(Schema.Number),
-	ongoing: Schema.optional(Schema.Boolean),
-	identifiers: Schema.optional(
-		Schema.Record({key: IdentifierKey, value: Schema.String})
-	),
-	subjects: Schema.optional(Schema.Array(Schema.String))
-})
+	cover: Schema.StringFromBase64Url,
+	title: Schema.String,
+	authors: Schema.Array(Schema.String),
+	description: Schema.String,
+	languages: Schema.String,
+	publisher: Schema.String,
+	publishDate: Schema.String,
+	length: Schema.Number,
+	ongoing: Schema.Boolean,
+	identifiers: Schema.Record({key: IdentifierKey, value: Schema.String}),
+	subjects: Schema.Array(Schema.String)
+}).pipe(Schema.partial)
 
 export type Book = typeof Book.Type

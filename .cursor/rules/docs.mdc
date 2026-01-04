@@ -1,0 +1,10 @@
+---
+name: docs
+description: Document/Comment Writing Guidelines
+---
+
+When writing documentation or comments, always write in both English and Chinese
+simultaneously so that everyone on the team can easily understand them. English
+is the primary language and should always be written first, followed by the
+Chinese translation on a separate line, with a blank line in between. If writing
+only a single-line comment, the Chinese translation is not necessary.

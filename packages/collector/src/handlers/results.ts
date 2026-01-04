@@ -1,10 +1,12 @@
 import {HttpApiBuilder} from "@effect/platform"
-import {Effect, Schema} from "effect"
+import {Effect, Layer, Schema} from "effect"
 import {and, desc, eq} from "drizzle-orm"
 import {CollectorApi, ResultNotFoundError} from "@ecrawler/api/collector"
 import {Result} from "@ecrawler/schemas"
-import {mapSqlError, PgDrizzle, schema} from "@ecrawler/core/database"
-import {WorkerSecurity} from "@ecrawler/core/auth"
+import {WorkerSecurity} from "@ecrawler/core/auth/index.ts"
+import {DatabaseLive} from "../database/client"
+import {PgDrizzle} from "@effect/sql-drizzle/Pg"
+import * as schema from "../database/schema.ts"
 
 export const ResultsHandler = HttpApiBuilder.group(
 	CollectorApi,
@@ -18,13 +20,7 @@ export const ResultsHandler = HttpApiBuilder.group(
 					Effect.gen(function* () {
 						const worker = yield* WorkerSecurity
 						const id = crypto.randomUUID()
-						yield* db.insert(schema.results).values({
-							id,
-							taskId: payload.taskId,
-							workerId: worker.id,
-							status: "success",
-							data: payload.data
-						})
+						yield* db.insert(schema.results).values({})
 						return {id}
 					}).pipe(mapSqlError)
 				)
