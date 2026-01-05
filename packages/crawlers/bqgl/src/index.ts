@@ -8,7 +8,7 @@ import {isNonEmpty} from "effect/String"
 export default {
 	name: "bqgl",
 	tags: ["bqgl"],
-	transformer: Effect.scoped(
+	parser: Effect.scoped(
 		Effect.gen(function* () {
 			const queue = yield* Queue.unbounded<Book>()
 			const crawler = yield* Effect.acquireRelease(

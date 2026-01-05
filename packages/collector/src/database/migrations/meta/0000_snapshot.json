@@ -1,5 +1,5 @@
 {
-  "id": "c47c3ee5-2caa-4f87-b8d9-6a14bf6b2d3a",
+  "id": "3de098b3-c4c8-491d-9f1d-3922a8d67b95",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -45,20 +45,21 @@
           "name": "data",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": false
-        },
-        "logs": {
-          "name": "logs",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'"
+          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "results_data_unique": {
+          "name": "results_data_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "data"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

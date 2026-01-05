@@ -18,7 +18,7 @@ const work = (worker: Worker) =>
 				tags: worker.tags
 			}
 		})
-		const transformer = yield* worker.transformer
+		const transformer = yield* worker.parser
 		const results = yield* transformer(task)
 
 		yield* pipe(
@@ -39,13 +39,14 @@ const work = (worker: Worker) =>
 
 const program = Effect.gen(function* () {
 	const config = yield* WorkerConfig
-	const workers: readonly Worker[] = yield* pipe(
+	const workers = yield* pipe(
 		config.workers,
 		Array.map(path => Effect.promise(() => import(path))),
 		Effect.allWith({mode: "either", concurrency: "unbounded"}),
 		Effect.map(Array.map(Either.getRight)),
 		Effect.map(Array.filter(Option.isSome)),
-		Effect.map(Array.map(Option.getOrThrow))
+		Effect.map(Array.map(Option.getOrThrow)),
+		Effect.map(Array.map(module => module.default as Worker))
 	)
 
 	yield* Effect.log(

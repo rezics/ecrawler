@@ -37,27 +37,27 @@ export default Layer.unwrapEffect(
 							UnknownError.mapError
 						)
 				)
-				.handle("updateResult", ({path, payload}) =>
-					drizzle
-						.update(schema.results)
-						.set({
-							by: payload.by,
-							tags: payload.tags
-								? Array.fromIterable(payload.tags)
-								: undefined,
-							data: payload.data
-						})
-						.where(eq(schema.results.id, path.id))
-						.returning({id: schema.results.id})
-						.pipe(
-							Effect.flatMap(Array.head),
-							Effect.catchTag("NoSuchElementException", () =>
-								Effect.fail(new ResultNotFoundError())
-							),
-							Effect.asVoid,
-							UnknownError.mapError
-						)
-				)
+			.handle("updateResult", ({path, payload}) =>
+				drizzle
+					.update(schema.results)
+					.set({
+						...(payload.by !== undefined && {by: payload.by}),
+						...(payload.tags !== undefined && {
+							tags: Array.fromIterable(payload.tags)
+						}),
+						...(payload.data !== undefined && {data: payload.data})
+					})
+					.where(eq(schema.results.id, path.id))
+					.returning({id: schema.results.id})
+					.pipe(
+						Effect.flatMap(Array.head),
+						Effect.catchTag("NoSuchElementException", () =>
+							Effect.fail(new ResultNotFoundError())
+						),
+						Effect.asVoid,
+						UnknownError.mapError
+					)
+			)
 				.handle("getResults", ({urlParams}) =>
 					drizzle
 						.select({

@@ -1,5 +1,5 @@
 {
-  "id": "cdf9e6ce-274b-4fdf-a226-3d79c4532d62",
+  "id": "50cd75d5-f5f9-446a-833a-d96491f257a6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -13,6 +13,12 @@
           "type": "uuid",
           "primaryKey": true,
           "notNull": true
+        },
+        "by": {
+          "name": "by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -39,20 +45,21 @@
           "name": "data",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": false
-        },
-        "hold": {
-          "name": "hold",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
+          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "tasks_data_unique": {
+          "name": "tasks_data_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "data"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
