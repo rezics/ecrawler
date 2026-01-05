@@ -1,17 +1,18 @@
 {
-  "name": "@ecrawler/worker",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "start": "bun run src/main.ts",
-    "dev": "bun --watch src/main.ts"
-  },
-  "exports": {
-    ".": "./src/main.ts",
-    "./interfaces": "./src/interfaces.ts"
-  },
-  "dependencies": {
-    "@ecrawler/api": "workspace:*",
-    "@ecrawler/schemas": "workspace:*"
-  }
+	"name": "@ecrawler/worker",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"start": "bun run src/main.ts",
+		"dev": "bun --watch src/main.ts"
+	},
+	"exports": {
+		".": "./src/main.ts",
+		"./interfaces": "./src/interfaces.ts",
+		"./clients": "./src/clients/index.ts"
+	},
+	"dependencies": {
+		"@ecrawler/api": "workspace:*",
+		"@ecrawler/schemas": "workspace:*"
+	}
 }

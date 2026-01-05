@@ -1,13 +1,10 @@
-import {Effect, Stream} from "effect"
+import {Effect} from "effect"
+import {Task} from "@ecrawler/schemas/task"
 
-export interface Worker {
-	readonly tag: string
-	readonly identifier: RegExp | ((url: string) => boolean)
-	readonly transformer: (
-		input: Stream.Stream<unknown>
-	) => Stream.Stream<unknown>
-}
-
-export interface Proxy {
-	readonly next: () => Effect.Effect<string>
+export interface Worker<T = unknown> {
+	readonly name: string
+	readonly tags: readonly string[]
+	readonly transformer: Effect.Effect<
+		(task: typeof Task.Type) => Effect.Effect<T[]>
+	>
 }
