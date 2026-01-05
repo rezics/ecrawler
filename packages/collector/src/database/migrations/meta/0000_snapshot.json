@@ -1,5 +1,5 @@
 {
-  "id": "28d1573e-1fe4-49ec-9dcc-1afd1ca33b5a",
+  "id": "c47c3ee5-2caa-4f87-b8d9-6a14bf6b2d3a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -14,18 +14,32 @@
           "primaryKey": true,
           "notNull": true
         },
-        "worker_id": {
-          "name": "worker_id",
+        "by": {
+          "name": "by",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "reported_at": {
-          "name": "reported_at",
+        "created_at": {
+          "name": "created_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
         },
         "data": {
           "name": "data",
@@ -33,11 +47,31 @@
           "primaryKey": false,
           "notNull": false
         },
-        "error": {
-          "name": "error",
-          "type": "jsonb",
+        "logs": {
+          "name": "logs",
+          "type": "text[]",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "'{}'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.token": {
+      "name": "token",
+      "schema": "",
+      "columns": {
+        "data": {
+          "name": "data",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
         }
       },
       "indexes": {},

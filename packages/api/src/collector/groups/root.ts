@@ -1,3 +1,4 @@
+import {Auth} from "@ecrawler/core/api/auth.ts"
 import {Result} from "@ecrawler/schemas/result"
 import {HttpApiEndpoint, HttpApiGroup, OpenApi} from "@effect/platform"
 import {Schema} from "effect"
@@ -11,7 +12,7 @@ const QueryParams = Schema.Struct({
 	id: Schema.UUID.annotations({
 		description: "Filter by result ID\n\n按结果 ID 筛选"
 	}),
-	worker_id: Schema.UUID.annotations({
+	by: Schema.UUID.annotations({
 		description: "Filter by worker ID\n\n按工作节点 ID 筛选"
 	}),
 	tags: Schema.String.pipe(Schema.Array).annotations({
@@ -45,6 +46,10 @@ const QueryParams = Schema.Struct({
 	.pipe(Schema.partial)
 
 const CreatePayload = Schema.Struct({
+	by: Schema.UUID.annotations({
+		description:
+			"Worker ID that produced the result\n\n产生结果的工作节点 ID"
+	}),
 	tags: Schema.String.pipe(Schema.Array).annotations({
 		description: "Tags for the new result\n\n新结果的标签"
 	}),
@@ -57,6 +62,10 @@ const CreatePayload = Schema.Struct({
 })
 
 const UpdatePayload = Schema.Struct({
+	by: Schema.UUID.annotations({
+		description:
+			"Worker ID that produced the result\n\n产生结果的工作节点 ID"
+	}),
 	tags: Schema.String.pipe(Schema.Array).annotations({
 		description: "New tags for the result\n\n结果的新标签"
 	}),
@@ -72,18 +81,10 @@ const UpdatePayload = Schema.Struct({
 	.pipe(Schema.partial)
 
 export default HttpApiGroup.make("collector")
+	.middleware(Auth)
 	.annotate(
 		OpenApi.Description,
 		"Operations related to collecting and managing crawl results\n\n与收集和管理抓取结果相关的操作"
-	)
-	.add(
-		HttpApiEndpoint.head("health")`/health`
-			.addSuccess(Schema.Void)
-			.annotate(OpenApi.Summary, "Check health status")
-			.annotate(
-				OpenApi.Description,
-				"Checks if the collector service is healthy\n\n检查收集器服务是否健康"
-			)
 	)
 	.add(
 		HttpApiEndpoint.post("createResult")`/results`
@@ -99,7 +100,7 @@ export default HttpApiGroup.make("collector")
 		HttpApiEndpoint.get("getResults")`/results`
 			.setUrlParams(QueryParams)
 			.addSuccess(Schema.Array(Result.pipe(Schema.omit("data"))))
-			.addError(ResultNotFoundError)
+			// .addError(ResultNotFoundError)
 			.annotate(OpenApi.Summary, "List results")
 			.annotate(
 				OpenApi.Description,
@@ -110,7 +111,7 @@ export default HttpApiGroup.make("collector")
 		HttpApiEndpoint.patch("updateResult")`/results/:id`
 			.setPath(Schema.Struct({id: Schema.UUID}))
 			.setPayload(UpdatePayload)
-			.addSuccess(Result)
+			.addSuccess(Schema.Void)
 			.addError(ResultNotFoundError)
 			.annotate(OpenApi.Summary, "Update a result")
 			.annotate(

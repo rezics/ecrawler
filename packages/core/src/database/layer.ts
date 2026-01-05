@@ -7,7 +7,10 @@ export const DatabaseLive = Layer.unwrapEffect(
 	pipe(
 		DatabaseConfig,
 		Effect.map(config =>
-			Layer.merge(PgClient.layer({url: config.url}), PgDrizzle.layer)
+			Layer.provideMerge(
+				PgDrizzle.layer,
+				PgClient.layer({url: config.url})
+			)
 		)
 	)
 )

@@ -1,4 +1,5 @@
-import {pgTable, uuid, timestamp, jsonb} from "drizzle-orm/pg-core"
+import {token} from "@ecrawler/core/database/schema.ts"
+import {pgTable, uuid, timestamp, jsonb, text} from "drizzle-orm/pg-core"
 import {v7} from "uuid"
 
 export const results = pgTable("results", {
@@ -6,8 +7,15 @@ export const results = pgTable("results", {
 		.primaryKey()
 		.notNull()
 		.$defaultFn(() => v7()),
-	worker_id: uuid().notNull(),
-	reported_at: timestamp({withTimezone: true}).notNull().defaultNow(),
+	by: uuid().notNull(),
+	created_at: timestamp({withTimezone: true}).notNull().defaultNow(),
+	updated_at: timestamp({withTimezone: true})
+		.notNull()
+		.defaultNow()
+		.$onUpdate(() => new Date()),
+	tags: text().array().notNull().default([]),
 	data: jsonb(),
-	error: jsonb()
+	logs: text().array().notNull().default([])
 })
+
+export {token}

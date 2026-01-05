@@ -1,11 +1,5 @@
-import {Config, Effect} from "effect"
+import {Config} from "effect"
 
-export class DatabaseConfig extends Effect.Service<DatabaseConfig>()(
-	"@ecrawler/core/DatabaseConfig",
-	{
-		effect: Config.all({
-			url: Config.redacted("DATABASE_URL")
-		}).pipe(Config.unwrap),
-		accessors: true
-	}
-) {}
+export const DatabaseConfig = Config.all({
+	url: Config.redacted("DATABASE_URL")
+}).pipe(Config.unwrap)

@@ -4,7 +4,7 @@ import {Task} from "./task"
 export const Result = Schema.extend(
 	Task,
 	Schema.Struct({
-		worker_id: Schema.UUID.annotations({
+		by: Schema.UUID.annotations({
 			description:
 				"Identifier of the worker that produced this result\n\n产生此结果的工作节点的标识符"
 		}),

@@ -1,13 +1,8 @@
 import {DatabaseConfig} from "@ecrawler/core/database/config.ts"
 import {defineConfig} from "drizzle-kit"
-import {Context, Effect, Layer, Redacted} from "effect"
+import {Config, Effect, Redacted} from "effect"
 
-const config = DatabaseConfig.Default.pipe(
-	Layer.build,
-	Effect.scoped,
-	Effect.runSync,
-	Context.get(DatabaseConfig)
-)
+const config = DatabaseConfig.pipe(Config.unwrap, Effect.runSync)
 
 export default defineConfig({
 	dbCredentials: {
