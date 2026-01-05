@@ -13,7 +13,10 @@ const work = (worker: Worker) =>
 		const {collector} = yield* CollectorClient
 
 		const task = yield* dispatcher.nextTask({
-			urlParams: {tags: worker.tags}
+			urlParams: {
+				by: config.id,
+				tags: worker.tags
+			}
 		})
 		const transformer = yield* worker.transformer
 		const results = yield* transformer(task)

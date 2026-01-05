@@ -4,7 +4,7 @@ import {HttpApiBuilder} from "@effect/platform"
 import {PgDrizzle} from "@effect/sql-drizzle/Pg"
 import {Array, Effect, Layer} from "effect"
 import * as schema from "../../database/schema.ts"
-import {and, arrayContains, eq, gte, lt, SQL} from "drizzle-orm"
+import {and, arrayContained, eq, gte, isNull, lt, SQL} from "drizzle-orm"
 import {UnknownError} from "@ecrawler/core/api/error.js"
 
 export default Layer.unwrapEffect(
@@ -71,10 +71,10 @@ export default Layer.unwrapEffect(
 								...[
 									urlParams.id &&
 										eq(schema.tasks.id, urlParams.id),
-									urlParams.hold !== undefined &&
-										eq(schema.tasks.hold, urlParams.hold),
+									urlParams.by &&
+										eq(schema.tasks.by, urlParams.by),
 									urlParams.tags &&
-										arrayContains(
+										arrayContained(
 											schema.tasks.tags,
 											Array.fromIterable(urlParams.tags)
 										),
@@ -98,11 +98,11 @@ export default Layer.unwrapEffect(
 				.handle("nextTask", ({urlParams}) =>
 					drizzle
 						.update(schema.tasks)
-						.set({hold: true})
+						.set({by: urlParams.by})
 						.where(
 							and(
-								eq(schema.tasks.hold, false),
-								arrayContains(
+								isNull(schema.tasks.by),
+								arrayContained(
 									schema.tasks.tags,
 									Array.fromIterable(urlParams.tags)
 								)
@@ -114,21 +114,6 @@ export default Layer.unwrapEffect(
 							Effect.catchTag("NoSuchElementException", () =>
 								Effect.fail(new TaskNotFoundError())
 							),
-							UnknownError.mapError
-						)
-				)
-				.handle("holdTask", ({path}) =>
-					drizzle
-						.update(schema.tasks)
-						.set({hold: true})
-						.where(eq(schema.tasks.id, path.id))
-						.returning({id: schema.tasks.id})
-						.pipe(
-							Effect.flatMap(Array.head),
-							Effect.catchTag("NoSuchElementException", () =>
-								Effect.fail(new TaskNotFoundError())
-							),
-							Effect.asVoid,
 							UnknownError.mapError
 						)
 				)

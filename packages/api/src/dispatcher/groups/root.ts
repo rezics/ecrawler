@@ -12,8 +12,8 @@ const QueryParams = Schema.Struct({
 	id: Schema.UUID.annotations({
 		description: "Filter by task ID\n\n按任务 ID 筛选"
 	}),
-	hold: Schema.BooleanFromString.annotations({
-		description: "Filter by hold status\n\n按挂起状态筛选"
+	by: Schema.UUID.annotations({
+		description: "Filter by worker ID\n\n按工作节点 ID 筛选"
 	}),
 	tags: Schema.String.pipe(Schema.Array).annotations({
 		description:
@@ -90,7 +90,6 @@ export default HttpApiGroup.make("dispatcher")
 		HttpApiEndpoint.post("createTask")`/tasks`
 			.setPayload(CreatePayload)
 			.addSuccess(Schema.Struct({id: Schema.UUID}))
-
 			.annotate(OpenApi.Summary, "Create a new task")
 			.annotate(
 				OpenApi.Description,
@@ -102,7 +101,6 @@ export default HttpApiGroup.make("dispatcher")
 			.setUrlParams(QueryParams)
 			.addSuccess(Schema.Array(Task.pipe(Schema.omit("data"))))
 			.addError(TaskNotFoundError)
-
 			.annotate(OpenApi.Summary, "List tasks")
 			.annotate(
 				OpenApi.Description,
@@ -115,7 +113,6 @@ export default HttpApiGroup.make("dispatcher")
 			.setPayload(UpdatePayload)
 			.addSuccess(Task)
 			.addError(TaskNotFoundError)
-
 			.annotate(OpenApi.Summary, "Update a task")
 			.annotate(
 				OpenApi.Description,
@@ -127,7 +124,6 @@ export default HttpApiGroup.make("dispatcher")
 			.setPath(Schema.Struct({id: Schema.UUID}))
 			.addSuccess(Schema.Void)
 			.addError(TaskNotFoundError)
-
 			.annotate(OpenApi.Summary, "Delete a task")
 			.annotate(
 				OpenApi.Description,
@@ -138,6 +134,10 @@ export default HttpApiGroup.make("dispatcher")
 		HttpApiEndpoint.post("nextTask")`/tasks/next`
 			.setUrlParams(
 				Schema.Struct({
+					by: Schema.UUID.annotations({
+						description:
+							"Worker ID to assign the task to\n\n分配任务给的工作节点 ID"
+					}),
 					tags: Schema.String.pipe(Schema.Array).annotations({
 						description:
 							"Tags to match for the next task\n\n要匹配的下一个任务的标签"
@@ -146,22 +146,9 @@ export default HttpApiGroup.make("dispatcher")
 			)
 			.addSuccess(Task)
 			.addError(TaskNotFoundError)
-
 			.annotate(OpenApi.Summary, "Get next task")
 			.annotate(
 				OpenApi.Description,
 				"Fetches the next available task matching the provided tags\n\n获取匹配提供标签的下一个可用任务"
-			)
-	)
-	.add(
-		HttpApiEndpoint.post("holdTask")`/tasks/hold/:id`
-			.setPath(Schema.Struct({id: Schema.UUID}))
-			.addSuccess(Schema.Void)
-			.addError(TaskNotFoundError)
-
-			.annotate(OpenApi.Summary, "Put task on hold")
-			.annotate(
-				OpenApi.Description,
-				"Marks a task as being on hold, preventing it from being dispatched temporarily\n\n将任务标记为挂起状态，暂时防止其被调度"
 			)
 	)
