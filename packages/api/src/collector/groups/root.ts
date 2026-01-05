@@ -89,7 +89,7 @@ export default HttpApiGroup.make("collector")
 	.add(
 		HttpApiEndpoint.post("createResult")`/results`
 			.setPayload(CreatePayload)
-			.addSuccess(Result.pipe(Schema.omit("data")))
+			.addSuccess(Schema.Struct({id: Schema.UUID}))
 			.annotate(OpenApi.Summary, "Create a new result")
 			.annotate(
 				OpenApi.Description,

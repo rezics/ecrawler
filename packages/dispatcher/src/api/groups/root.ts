@@ -1,4 +1,5 @@
-import Api, {TaskNotFoundError} from "@ecrawler/api/dispatcher/index.ts"
+import Api from "@ecrawler/api/dispatcher/index.ts"
+import {TaskNotFoundError} from "@ecrawler/api/dispatcher/groups/root.ts"
 import {HttpApiBuilder} from "@effect/platform"
 import {PgDrizzle} from "@effect/sql-drizzle/Pg"
 import {Array, Effect, Layer} from "effect"
@@ -20,7 +21,7 @@ export default Layer.unwrapEffect(
 							tags: Array.fromIterable(payload.tags),
 							data: payload.data
 						})
-						.returning()
+						.returning({id: schema.tasks.id})
 						.pipe(Effect.flatMap(Array.head), UnknownError.mapError)
 				)
 				.handle("deleteTask", ({path}) =>
@@ -58,7 +59,12 @@ export default Layer.unwrapEffect(
 				)
 				.handle("getTasks", ({urlParams}) =>
 					drizzle
-						.select()
+						.select({
+							id: schema.tasks.id,
+							created_at: schema.tasks.created_at,
+							updated_at: schema.tasks.updated_at,
+							tags: schema.tasks.tags
+						})
 						.from(schema.tasks)
 						.where(
 							and(

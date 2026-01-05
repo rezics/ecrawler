@@ -13,4 +13,4 @@ const program = Effect.gen(function* () {
 	)
 })
 
-program.pipe(NodeRuntime.runMain)
+NodeRuntime.runMain(program)

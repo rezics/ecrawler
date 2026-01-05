@@ -12,16 +12,16 @@ export default Layer.unwrapEffect(
 
 		return HttpApiBuilder.group(Api, "collector", handlers =>
 			handlers
-				.handle("createResult", ({payload}) =>
-					drizzle
-						.insert(schema.results)
-						.values({
-							by: payload.by,
-							tags: Array.fromIterable(payload.tags),
-							data: payload.data
-						})
-						.returning()
-						.pipe(Effect.flatMap(Array.head), UnknownError.mapError)
+			.handle("createResult", ({payload}) =>
+				drizzle
+					.insert(schema.results)
+					.values({
+						by: payload.by,
+						tags: Array.fromIterable(payload.tags),
+						data: payload.data
+					})
+					.returning({id: schema.results.id})
+					.pipe(Effect.flatMap(Array.head), UnknownError.mapError)
 				)
 				.handle("deleteResult", ({path}) =>
 					drizzle
@@ -58,38 +58,45 @@ export default Layer.unwrapEffect(
 							UnknownError.mapError
 						)
 				)
-				.handle("getResults", ({urlParams}) =>
-					drizzle
-						.select()
-						.from(schema.results)
-						.where(
-							and(
-								...[
-									urlParams.id &&
-										eq(schema.results.id, urlParams.id),
-									urlParams.by &&
-										eq(schema.results.by, urlParams.by),
-									urlParams.tags &&
-										arrayContains(
-											schema.results.tags,
-											Array.fromIterable(urlParams.tags)
-										),
-									urlParams.since &&
-										gte(
-											schema.results.created_at,
-											urlParams.since
-										),
-									urlParams.before &&
-										lt(
-											schema.results.created_at,
-											urlParams.before
-										)
-								].filter(v => v instanceof SQL)
-							)
+			.handle("getResults", ({urlParams}) =>
+				drizzle
+					.select({
+						id: schema.results.id,
+						by: schema.results.by,
+						created_at: schema.results.created_at,
+						updated_at: schema.results.updated_at,
+						tags: schema.results.tags,
+						logs: schema.results.logs
+					})
+					.from(schema.results)
+					.where(
+						and(
+							...[
+								urlParams.id &&
+									eq(schema.results.id, urlParams.id),
+								urlParams.by &&
+									eq(schema.results.by, urlParams.by),
+								urlParams.tags &&
+									arrayContains(
+										schema.results.tags,
+										Array.fromIterable(urlParams.tags)
+									),
+								urlParams.since &&
+									gte(
+										schema.results.created_at,
+										urlParams.since
+									),
+								urlParams.before &&
+									lt(
+										schema.results.created_at,
+										urlParams.before
+									)
+							].filter(v => v instanceof SQL)
 						)
-						.limit(urlParams.limit ?? 100)
-						.offset(urlParams.offset ?? 0)
-						.pipe(UnknownError.mapError)
+					)
+					.limit(urlParams.limit ?? 100)
+					.offset(urlParams.offset ?? 0)
+					.pipe(UnknownError.mapError)
 				)
 		)
 	})

@@ -11,7 +11,7 @@ export const IdentifierKey = Schema.Union(
 )
 
 export const Book = Schema.Struct({
-	cover: Schema.StringFromBase64Url,
+	cover: Schema.String,
 	title: Schema.String,
 	authors: Schema.Array(Schema.String),
 	description: Schema.String,

@@ -1,5 +1,4 @@
 import {Config} from "effect"
-import {v7} from "uuid"
 
 export const WorkerConfig = Config.all({
 	id: Config.string("ID"),

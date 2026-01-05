@@ -1,6 +1,7 @@
 import {Task} from "@ecrawler/schemas/task"
 import {HttpApiEndpoint, HttpApiGroup, OpenApi} from "@effect/platform"
 import {Schema} from "effect"
+import {UnknownError} from "@ecrawler/core/api/error.js"
 
 export class TaskNotFoundError extends Schema.TaggedError<TaskNotFoundError>()(
 	"TaskNotFoundError",
@@ -75,6 +76,7 @@ export default HttpApiGroup.make("dispatcher")
 		OpenApi.Description,
 		"Operations related to task dispatching and queue management\n\n与任务调度和队列管理相关的操作"
 	)
+	.addError(UnknownError)
 	.add(
 		HttpApiEndpoint.head("health")`/health`
 			.addSuccess(Schema.Void)
@@ -87,7 +89,8 @@ export default HttpApiGroup.make("dispatcher")
 	.add(
 		HttpApiEndpoint.post("createTask")`/tasks`
 			.setPayload(CreatePayload)
-			.addSuccess(Task.pipe(Schema.omit("data")))
+			.addSuccess(Schema.Struct({id: Schema.UUID}))
+
 			.annotate(OpenApi.Summary, "Create a new task")
 			.annotate(
 				OpenApi.Description,
@@ -99,6 +102,7 @@ export default HttpApiGroup.make("dispatcher")
 			.setUrlParams(QueryParams)
 			.addSuccess(Schema.Array(Task.pipe(Schema.omit("data"))))
 			.addError(TaskNotFoundError)
+
 			.annotate(OpenApi.Summary, "List tasks")
 			.annotate(
 				OpenApi.Description,
@@ -111,6 +115,7 @@ export default HttpApiGroup.make("dispatcher")
 			.setPayload(UpdatePayload)
 			.addSuccess(Task)
 			.addError(TaskNotFoundError)
+
 			.annotate(OpenApi.Summary, "Update a task")
 			.annotate(
 				OpenApi.Description,
@@ -122,6 +127,7 @@ export default HttpApiGroup.make("dispatcher")
 			.setPath(Schema.Struct({id: Schema.UUID}))
 			.addSuccess(Schema.Void)
 			.addError(TaskNotFoundError)
+
 			.annotate(OpenApi.Summary, "Delete a task")
 			.annotate(
 				OpenApi.Description,
@@ -140,6 +146,7 @@ export default HttpApiGroup.make("dispatcher")
 			)
 			.addSuccess(Task)
 			.addError(TaskNotFoundError)
+
 			.annotate(OpenApi.Summary, "Get next task")
 			.annotate(
 				OpenApi.Description,
@@ -151,6 +158,7 @@ export default HttpApiGroup.make("dispatcher")
 			.setPath(Schema.Struct({id: Schema.UUID}))
 			.addSuccess(Schema.Void)
 			.addError(TaskNotFoundError)
+
 			.annotate(OpenApi.Summary, "Put task on hold")
 			.annotate(
 				OpenApi.Description,
