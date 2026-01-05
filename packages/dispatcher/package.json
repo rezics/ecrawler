@@ -5,7 +5,8 @@
 	"dependencies": {
 		"@ecrawler/api": "workspace:*",
 		"@ecrawler/core": "workspace:*",
-		"@ecrawler/schemas": "workspace:*"
+		"@ecrawler/schemas": "workspace:*",
+		"drizzle-kit": "~0.31.8"
 	},
 	"scripts": {
 		"start": "bun run src/main.ts",

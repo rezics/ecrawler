@@ -1,9 +1,20 @@
-import {pgTable, uuid, text, timestamp} from "drizzle-orm/pg-core"
+import {token} from "@ecrawler/core/database/schema.ts"
+import {pgTable, uuid, timestamp, jsonb, text, boolean} from "drizzle-orm/pg-core"
+import {v7} from "uuid"
 
-export const workers = pgTable("workers", {
-	id: uuid().primaryKey().notNull(),
-	/** the tags the worker is subscribed to */
-	tags: text().array().notNull(),
-	registered_at: timestamp().notNull().defaultNow(),
-	last_seen: timestamp({withTimezone: true}).notNull()
+export const tasks = pgTable("tasks", {
+	id: uuid()
+		.primaryKey()
+		.notNull()
+		.$defaultFn(() => v7()),
+	created_at: timestamp({withTimezone: true}).notNull().defaultNow(),
+	updated_at: timestamp({withTimezone: true})
+		.notNull()
+		.defaultNow()
+		.$onUpdate(() => new Date()),
+	tags: text().array().notNull().default([]),
+	data: jsonb(),
+	hold: boolean().notNull().default(false)
 })
+
+export {token}

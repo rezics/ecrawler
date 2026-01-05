@@ -500,6 +500,7 @@ __metadata:
     "@ecrawler/api": "workspace:*"
     "@ecrawler/core": "workspace:*"
     "@ecrawler/schemas": "workspace:*"
+    drizzle-kit: "npm:~0.31.8"
   languageName: unknown
   linkType: soft
 

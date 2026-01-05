@@ -1,41 +1,16 @@
-import {NodeRuntime} from "@effect/platform-node"
-import {HttpApiBuilder, HttpMiddleware, HttpServer} from "@effect/platform"
-import {NodeHttpServer} from "@effect/platform-node"
-import {Effect, Layer, pipe} from "effect"
-import {createServer} from "node:http"
-
-import {DispatcherApi} from "@ecrawler/api/dispatcher"
-import {TasksHandler} from "./handlers/tasks.ts"
-import {WorkersHandler} from "./handlers/workers.ts"
-import {WorkerAuthLive} from "./auth.ts"
+import {Effect, Layer} from "effect"
+import api from "./api/index.ts"
 import {DatabaseLive} from "./database/client.ts"
-import {DispatcherConfig} from "./config.ts"
+import {NodeRuntime} from "@effect/platform-node"
 
-const ApiLive = HttpApiBuilder.api(DispatcherApi).pipe(
-	Layer.provide(TasksHandler),
-	Layer.provide(WorkersHandler)
-)
+const ApiLayer = api.pipe(Layer.provide(DatabaseLive))
 
-const HttpServerLive = Layer.unwrapEffect(
-	Effect.map(DispatcherConfig, config =>
-		NodeHttpServer.layer(createServer, {port: config.port})
+const program = Effect.gen(function* () {
+	yield* Effect.log("Starting Dispatcher Server...")
+
+	return yield* Layer.launch(ApiLayer).pipe(
+		Effect.ensuring(Effect.log("Shutting down Dispatcher Server..."))
 	)
-)
+})
 
-const ServerLive = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
-	Layer.provide(ApiLive),
-	Layer.provide(WorkerAuthLive),
-	Layer.provide(DatabaseLive),
-	HttpServer.withLogAddress,
-	Layer.provide(HttpServerLive),
-	Layer.provide(DispatcherConfig.Default)
-)
-
-const main = pipe(
-	Effect.Do,
-	Effect.tap(() => Effect.logInfo("Starting Dispatcher Server...")),
-	Effect.andThen(() => Layer.launch(ServerLive)),
-	Effect.ensuring(Effect.logInfo("Shutting down Dispatcher Server..."))
-)
-
-main.pipe(NodeRuntime.runMain)
+program.pipe(NodeRuntime.runMain)
