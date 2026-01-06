@@ -3,7 +3,7 @@
 		{
 			"files": "./packages/crawlers/**/*.ts",
 			"options": {
-				"printWidth": 200
+				"printWidth": 144
 			}
 		}
 	],

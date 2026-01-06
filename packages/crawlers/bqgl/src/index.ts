@@ -5,6 +5,11 @@ import {Book} from "@ecrawler/schemas/book"
 import {isNotUndefined} from "effect/Predicate"
 import {isNonEmpty} from "effect/String"
 
+/**
+ * BQGL (笔趣阁) book metadata crawler.
+ *
+ * 笔趣阁书籍元数据爬虫。
+ */
 export default {
 	name: "bqgl",
 	tags: ["bqgl"],
