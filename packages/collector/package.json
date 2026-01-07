@@ -8,12 +8,7 @@
 		"@ecrawler/schemas": "workspace:*",
 		"drizzle-kit": "~0.31.8"
 	},
-	"scripts": {
-		"start": "bun run src/main.ts",
-		"dev": "bun --watch src/main.ts"
-	},
 	"exports": {
-		".": "./src/main.ts",
-		"./api": "./src/api.ts"
+		"./*": "./src/*"
 	}
 }

@@ -1,0 +1,14 @@
+{
+	"name": "@ecrawler/worker-bqgl",
+	"type": "module",
+	"private": true,
+	"exports": {
+		"./*": "./src/*"
+	},
+	"dependencies": {
+		"@ecrawler/schemas": "workspace:*",
+		"@ecrawler/worker": "workspace:*",
+		"crawlee": "^3.15.3",
+		"playwright": "^1.57.0"
+	}
+}

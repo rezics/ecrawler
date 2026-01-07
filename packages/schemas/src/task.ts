@@ -15,9 +15,8 @@ export const Task = Schema.Struct({
 		description:
 			"Tags associated with the task for categorization\n\n与任务关联的分类标签"
 	}),
-	data: Schema.Any.annotations({
-		description:
-			"Arbitrary data associated with the task\n\n与任务关联的任意数据"
+	link: Schema.String.annotations({
+		description: "The task link\n\n任务链接"
 	})
 }).annotations({
 	identifier: "Task",

@@ -1,24 +1,26 @@
-import {Array, Option, Effect, Either, pipe, Queue, Layer} from "effect"
+import {Array, Effect, pipe, Queue, Layer} from "effect"
 import CollectorClient from "./clients/collector"
 import DispatcherClient from "./clients/dispatcher"
 import {WorkerConfig} from "./config"
-import type {Worker} from "./interfaces"
+import type {DataExtractor} from "./interfaces"
 import {NodeRuntime, NodeHttpClient} from "@effect/platform-node"
 import {AdaptiveConcurrency} from "./acc"
 
-const work = (worker: Worker) =>
+const work = (worker: DataExtractor) =>
 	Effect.gen(function* () {
 		const config = yield* WorkerConfig
 		const {dispatcher} = yield* DispatcherClient
 		const {collector} = yield* CollectorClient
 
 		const task = yield* dispatcher.nextTask({
+			payload: {
+				by: config.id
+			},
 			urlParams: {
-				by: config.id,
 				tags: worker.tags
 			}
 		})
-		const transformer = yield* worker.parser
+		const transformer = yield* worker.init
 		const results = yield* transformer(task)
 
 		yield* pipe(
@@ -28,6 +30,7 @@ const work = (worker: Worker) =>
 					payload: {
 						by: config.id,
 						tags: task.tags,
+						link: task.link,
 						data: result
 					}
 				})
@@ -43,10 +46,8 @@ const program = Effect.gen(function* () {
 		config.workers,
 		Array.map(path => Effect.promise(() => import(path))),
 		Effect.allWith({mode: "either", concurrency: "unbounded"}),
-		Effect.map(Array.map(Either.getRight)),
-		Effect.map(Array.filter(Option.isSome)),
-		Effect.map(Array.map(Option.getOrThrow)),
-		Effect.map(Array.map(module => module.default as Worker))
+		Effect.map(Array.getRights),
+		Effect.map(Array.map(module => module.default as DataExtractor))
 	)
 
 	yield* Effect.log(
@@ -54,15 +55,14 @@ const program = Effect.gen(function* () {
 		Array.map(workers, worker => worker.name).join(" ")
 	)
 
-	const queue = yield* Queue.unbounded<Worker>()
+	const queue = yield* Queue.unbounded<DataExtractor>()
 	yield* Queue.offerAll(queue, workers)
 
 	yield* AdaptiveConcurrency.make(queue, work)
 })
 
-const MainLive = Layer.mergeAll(
-	DispatcherClient.Default,
-	CollectorClient.Default
-).pipe(Layer.provide(NodeHttpClient.layer))
+const MainLive = Layer.mergeAll(DispatcherClient.Default, CollectorClient.Default).pipe(
+	Layer.provide(NodeHttpClient.layer)
+)
 
 program.pipe(Effect.provide(MainLive), NodeRuntime.runMain)

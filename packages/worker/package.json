@@ -14,5 +14,8 @@
 	"dependencies": {
 		"@ecrawler/api": "workspace:*",
 		"@ecrawler/schemas": "workspace:*"
-	}
+	},
+	"workspaces": [
+		"./implementations/*"
+	]
 }

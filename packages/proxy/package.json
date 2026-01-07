@@ -1,0 +1,11 @@
+{
+	"name": "@ecrawler/proxy",
+	"type": "module",
+	"private": true,
+	"exports": {
+		"./*": "./src/*"
+	},
+	"workspaces": [
+		"./implementations/*"
+	]
+}

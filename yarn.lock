@@ -471,20 +471,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ecrawler/crawler-bqgl@workspace:packages/crawlers/bqgl":
+"@ecrawler/crawler-qidian@workspace:packages/worker/implementations/qidian":
   version: 0.0.0-use.local
-  resolution: "@ecrawler/crawler-bqgl@workspace:packages/crawlers/bqgl"
-  dependencies:
-    "@ecrawler/schemas": "workspace:*"
-    "@ecrawler/worker": "workspace:*"
-    crawlee: "npm:^3.15.3"
-    playwright: "npm:^1.57.0"
-  languageName: unknown
-  linkType: soft
-
-"@ecrawler/crawler-qidian@workspace:packages/crawlers/qidian":
-  version: 0.0.0-use.local
-  resolution: "@ecrawler/crawler-qidian@workspace:packages/crawlers/qidian"
+  resolution: "@ecrawler/crawler-qidian@workspace:packages/worker/implementations/qidian"
   dependencies:
     "@ecrawler/schemas": "workspace:*"
     "@ecrawler/worker": "workspace:*"
@@ -504,9 +493,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@ecrawler/proxy@workspace:packages/proxy":
+  version: 0.0.0-use.local
+  resolution: "@ecrawler/proxy@workspace:packages/proxy"
+  languageName: unknown
+  linkType: soft
+
 "@ecrawler/schemas@workspace:*, @ecrawler/schemas@workspace:packages/schemas":
   version: 0.0.0-use.local
   resolution: "@ecrawler/schemas@workspace:packages/schemas"
+  languageName: unknown
+  linkType: soft
+
+"@ecrawler/worker-bqgl@workspace:packages/worker/implementations/bqgl":
+  version: 0.0.0-use.local
+  resolution: "@ecrawler/worker-bqgl@workspace:packages/worker/implementations/bqgl"
+  dependencies:
+    "@ecrawler/schemas": "workspace:*"
+    "@ecrawler/worker": "workspace:*"
+    crawlee: "npm:^3.15.3"
+    playwright: "npm:^1.57.0"
   languageName: unknown
   linkType: soft
 

@@ -1,5 +1,5 @@
 {
-  "id": "3de098b3-c4c8-491d-9f1d-3922a8d67b95",
+  "id": "68226f79-15ed-4ba0-acb3-b7feda3d66e4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -41,6 +41,12 @@
           "notNull": true,
           "default": "'{}'"
         },
+        "link": {
+          "name": "link",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "data": {
           "name": "data",
           "type": "jsonb",
@@ -51,15 +57,7 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "results_data_unique": {
-          "name": "results_data_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "data"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

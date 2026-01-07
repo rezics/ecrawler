@@ -1,0 +1,10 @@
+---
+name: functional programming
+alwaysApply: true
+---
+
+By following functional programming principles, the code avoids or strictly
+manages side effects using Effect-TS, resulting in clean, linear code with a
+high level of abstraction, much like an automated industrial assembly line or a
+complex mathematical formula. The code hides the details of "how it's done,"
+directly showcasing the "logical chain" of data transformations.

@@ -18,6 +18,7 @@ export default Layer.unwrapEffect(
 						.values({
 							by: payload.by,
 							tags: Array.fromIterable(payload.tags),
+							link: payload.link,
 							data: payload.data
 						})
 						.returning({id: schema.results.id})
@@ -30,67 +31,44 @@ export default Layer.unwrapEffect(
 						.returning({id: schema.results.id})
 						.pipe(
 							Effect.flatMap(Array.head),
-							Effect.catchTag("NoSuchElementException", () =>
-								Effect.fail(new ResultNotFoundError())
-							),
+							Effect.catchTag("NoSuchElementException", () => Effect.fail(new ResultNotFoundError())),
 							Effect.asVoid,
 							UnknownError.mapError
 						)
 				)
-			.handle("updateResult", ({path, payload}) =>
-				drizzle
-					.update(schema.results)
-					.set({
-						...(payload.by !== undefined && {by: payload.by}),
-						...(payload.tags !== undefined && {
-							tags: Array.fromIterable(payload.tags)
-						}),
-						...(payload.data !== undefined && {data: payload.data})
-					})
-					.where(eq(schema.results.id, path.id))
-					.returning({id: schema.results.id})
-					.pipe(
-						Effect.flatMap(Array.head),
-						Effect.catchTag("NoSuchElementException", () =>
-							Effect.fail(new ResultNotFoundError())
-						),
-						Effect.asVoid,
-						UnknownError.mapError
-					)
-			)
+				.handle("updateResult", ({path, payload}) =>
+					drizzle
+						.update(schema.results)
+						.set({
+							...(payload.by !== undefined && {by: payload.by}),
+							...(payload.tags !== undefined && {
+								tags: Array.fromIterable(payload.tags)
+							}),
+							...(payload.link !== undefined && {link: payload.link}),
+							...(payload.data !== undefined && {data: payload.data})
+						})
+						.where(eq(schema.results.id, path.id))
+						.returning({id: schema.results.id})
+						.pipe(
+							Effect.flatMap(Array.head),
+							Effect.catchTag("NoSuchElementException", () => Effect.fail(new ResultNotFoundError())),
+							Effect.asVoid,
+							UnknownError.mapError
+						)
+				)
 				.handle("getResults", ({urlParams}) =>
 					drizzle
-						.select({
-							id: schema.results.id,
-							by: schema.results.by,
-							created_at: schema.results.created_at,
-							updated_at: schema.results.updated_at,
-							tags: schema.results.tags,
-							logs: schema.results.logs
-						})
+						.select()
 						.from(schema.results)
 						.where(
 							and(
 								...[
-									urlParams.id &&
-										eq(schema.results.id, urlParams.id),
-									urlParams.by &&
-										eq(schema.results.by, urlParams.by),
+									urlParams.id && eq(schema.results.id, urlParams.id),
+									urlParams.by && eq(schema.results.by, urlParams.by),
 									urlParams.tags &&
-										arrayContained(
-											schema.results.tags,
-											Array.fromIterable(urlParams.tags)
-										),
-									urlParams.since &&
-										gte(
-											schema.results.created_at,
-											urlParams.since
-										),
-									urlParams.before &&
-										lt(
-											schema.results.created_at,
-											urlParams.before
-										)
+										arrayContained(schema.results.tags, Array.fromIterable(urlParams.tags)),
+									urlParams.since && gte(schema.results.created_at, urlParams.since),
+									urlParams.before && lt(schema.results.created_at, urlParams.before)
 								].filter(v => v instanceof SQL)
 							)
 						)

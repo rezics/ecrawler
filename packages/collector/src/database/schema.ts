@@ -14,7 +14,8 @@ export const results = pgTable("results", {
 		.defaultNow()
 		.$onUpdate(() => new Date()),
 	tags: text().array().notNull().default([]),
-	data: jsonb().notNull().unique()
+	link: text().notNull(),
+	data: jsonb().notNull()
 })
 
 export {token}
