@@ -2191,6 +2191,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dotenv@npm:^17.2.3":
+  version: 17.2.3
+  resolution: "dotenv@npm:17.2.3"
+  checksum: 10c0/c884403209f713214a1b64d4d1defa4934c2aa5b0002f5a670ae298a51e3c3ad3ba79dfee2f8df49f01ae74290fcd9acdb1ab1d09c7bfb42b539036108bb2ba0
+  languageName: node
+  linkType: hard
+
 "drizzle-kit@npm:~0.31.8":
   version: 0.31.8
   resolution: "drizzle-kit@npm:0.31.8"
@@ -2322,6 +2329,7 @@ __metadata:
     "@effect/sql-pg": "npm:^0.50.1"
     "@effect/workflow": "npm:^0.16.0"
     "@types/node": "npm:^25.0.3"
+    dotenv: "npm:^17.2.3"
     drizzle-orm: "npm:^0.45.1"
     effect: "npm:^3.19.14"
     prettier: "npm:^3.7.4"

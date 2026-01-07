@@ -1,3 +1,4 @@
+import "dotenv/config"
 import {Array, Effect, pipe, Layer, flow, Match, Ref, Duration, Stream, Schedule, Chunk, Either} from "effect"
 import CollectorClient from "./clients/collector"
 import DispatcherClient from "./clients/dispatcher"
