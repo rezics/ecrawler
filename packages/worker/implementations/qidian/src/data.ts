@@ -21,64 +21,26 @@ export default {
 						requestHandler: async ({page, request}) =>
 							pipe(
 								{
-									coverRaw: () =>
-										page
-											.locator(
-												`[id="book-detail"] [id="bookImg"] img`
-											)
-											.first()
-											.getAttribute("src"),
-									title: () =>
-										page
-											.locator("#bookName")
-											.first()
-											.textContent(),
-									author: () =>
-										page
-											.locator(".writer-name")
-											.first()
-											.textContent(),
-									subjects: () =>
-										page
-											.locator("p.book-attribute")
-											.first()
-											.textContent(),
-									description: () =>
-										page
-											.locator("#book-intro-detail")
-											.first()
-											.textContent(),
-									length: () =>
-										page
-											.locator(`.book-info em`)
-											.first()
-											.textContent()
+									cover: () => page.locator(`[id="book-detail"] [id="bookImg"] img`).first().getAttribute("src"),
+									title: () => page.locator("#bookName").first().textContent(),
+									author: () => page.locator(".writer-name").first().textContent(),
+									subjects: () => page.locator("p.book-attribute").first().textContent(),
+									description: () => page.locator("#book-intro-detail").first().textContent(),
+									length: () => page.locator(`.book-info em`).first().textContent()
 								},
 								Record.map(Effect.promise),
 								Effect.allWith({concurrency: "unbounded"}),
 								Effect.map(
 									data =>
 										({
-											cover: data.coverRaw
-												? `https:${data.coverRaw}`
-												: undefined,
+											cover: data.cover ? `https:${data.cover}` : undefined,
 											title: data.title?.trim(),
-											authors: [
-												data.author?.trim()
-											].filter(isNotUndefined),
-											subjects:
-												data.subjects
-													?.split("·")
-													.map(s => s.trim()) || [],
-											description:
-												data.description?.trim(),
+											authors: [data.author?.trim()].filter(isNotUndefined),
+											subjects: data.subjects?.split("·").map(s => s.trim()) || [],
+											description: data.description?.trim(),
 											identifiers: {url: request.url},
 											languages: "zh-CN",
-											length: pipe(
-												data.length,
-												parseChineseNumber,
-												Option.getOrUndefined
-											)
+											length: pipe(data.length, parseChineseNumber, Option.getOrUndefined)
 										} as const satisfies Book)
 								),
 								Effect.tap(book => Queue.offer(queue, book)),
@@ -92,9 +54,7 @@ export default {
 
 			return task =>
 				Effect.gen(function* () {
-					yield* Effect.promise(() =>
-						crawler.addRequests([globalThis.String(task.link)])
-					)
+					yield* Effect.promise(() => crawler.addRequests([globalThis.String(task.link)]))
 					return Chunk.toArray(yield* Queue.takeAll(queue))
 				})
 		})
@@ -115,9 +75,7 @@ const multipliers: Record<string, number> = {
  *
  * 解析中文数字字符串（如 "10万"）并返回对应数值。
  */
-const parseChineseNumber = (
-	input: string | null | undefined
-): Option.Option<number> =>
+const parseChineseNumber = (input: string | null | undefined): Option.Option<number> =>
 	pipe(
 		Option.fromNullable(input),
 		Option.map(String.trim),
