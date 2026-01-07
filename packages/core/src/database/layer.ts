@@ -6,11 +6,6 @@ import {PgClient} from "@effect/sql-pg"
 export const DatabaseLive = Layer.unwrapEffect(
 	pipe(
 		DatabaseConfig,
-		Effect.map(config =>
-			Layer.provideMerge(
-				PgDrizzle.layer,
-				PgClient.layer({url: config.url})
-			)
-		)
+		Effect.map(config => Layer.provideMerge(PgDrizzle.layer, PgClient.layer({url: config.url})))
 	)
 )

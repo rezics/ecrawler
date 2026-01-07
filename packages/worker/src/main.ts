@@ -1,44 +1,18 @@
-import {Array, Effect, pipe, Queue, Layer} from "effect"
+import {Array, Effect, pipe, Layer, flow, Match, Ref, Duration, Stream, Schedule, Chunk, Either} from "effect"
 import CollectorClient from "./clients/collector"
 import DispatcherClient from "./clients/dispatcher"
 import {WorkerConfig} from "./config"
-import type {DataExtractor} from "./interfaces"
+import type {Extractor} from "./interfaces"
 import {NodeRuntime, NodeHttpClient} from "@effect/platform-node"
-import {AdaptiveConcurrency} from "./acc"
+import {initData} from "./roles/data"
+import {initLink} from "./roles/link"
 
-const work = (worker: DataExtractor) =>
-	Effect.gen(function* () {
-		const config = yield* WorkerConfig
-		const {dispatcher} = yield* DispatcherClient
-		const {collector} = yield* CollectorClient
-
-		const task = yield* dispatcher.nextTask({
-			payload: {
-				by: config.id
-			},
-			urlParams: {
-				tags: worker.tags
-			}
-		})
-		const transformer = yield* worker.init
-		const results = yield* transformer(task)
-
-		yield* pipe(
-			results,
-			Array.map(result =>
-				collector.createResult({
-					payload: {
-						by: config.id,
-						tags: task.tags,
-						link: task.link,
-						data: result
-					}
-				})
-			),
-			Effect.allWith({concurrency: "unbounded"}),
-			Effect.asVoid
-		)
-	})
+const init = (worker: Extractor) =>
+	Match.value(worker).pipe(
+		Match.when({role: "data"}, initData),
+		Match.when({role: "link"}, initLink),
+		Match.exhaustive
+	)
 
 const program = Effect.gen(function* () {
 	const config = yield* WorkerConfig
@@ -46,8 +20,12 @@ const program = Effect.gen(function* () {
 		config.workers,
 		Array.map(path => Effect.promise(() => import(path))),
 		Effect.allWith({mode: "either", concurrency: "unbounded"}),
-		Effect.map(Array.getRights),
-		Effect.map(Array.map(module => module.default as DataExtractor))
+		Effect.map(
+			flow(
+				Array.getRights,
+				Array.map(module => module.default as Extractor)
+			)
+		)
 	)
 
 	yield* Effect.log(
@@ -55,10 +33,64 @@ const program = Effect.gen(function* () {
 		Array.map(workers, worker => worker.name).join(" ")
 	)
 
-	const queue = yield* Queue.unbounded<DataExtractor>()
-	yield* Queue.offerAll(queue, workers)
+	const processors = yield* pipe(workers, Array.map(init), Effect.allWith({concurrency: "unbounded"}))
 
-	yield* AdaptiveConcurrency.make(queue, work)
+	const window = Array.length(processors)
+	const limit = yield* Ref.make(1)
+	const cap = yield* Ref.make(config.limit)
+	const alpha = yield* Ref.make(0.3)
+	const slack = yield* Ref.make(1.5)
+	const ema = yield* Ref.make(Duration.zero)
+	const min = yield* Ref.make(Duration.infinity)
+
+	const up = () =>
+		cap.pipe(
+			Effect.flatMap(max => Ref.updateAndGet(limit, n => Math.min(n + 1, max))),
+			Effect.tap(n => gate.resize(n))
+		)
+	const down = () => Ref.updateAndGet(limit, n => Math.max(n / 2, 1)).pipe(Effect.tap(n => gate.resize(n)))
+
+	const gate = yield* limit.pipe(Effect.flatMap(n => Effect.makeSemaphore(n)))
+	const stream = Stream.repeat(Stream.fromIterable(processors), Schedule.forever)
+	const stats = yield* Ref.make(Chunk.empty<Duration.Duration>())
+
+	return yield* Stream.runForEach(stream, task =>
+		gate.withPermits(1)(
+			task.pipe(
+				Effect.asVoid,
+				Effect.either,
+				Effect.timed,
+				Effect.flatMap(([duration, result]) =>
+					Effect.gen(function* () {
+						if (Either.isLeft(result)) return yield* down()
+
+						yield* Ref.update(stats, s =>
+							Chunk.append(Chunk.size(s) < window ? s : Chunk.drop(s, 1), duration)
+						)
+
+						const samples = yield* stats
+						if (Chunk.size(samples) < window) return
+
+						const avg = yield* Duration.divide(Chunk.reduce(samples, Duration.zero, Duration.sum), window)
+
+						const gain = yield* alpha
+						const next = Duration.decode(
+							gain * Duration.toMillis(avg) + (1 - gain) * Duration.toMillis(yield* ema)
+						)
+
+						yield* Ref.set(ema, next)
+						if (Duration.lessThan(next, yield* min)) yield* Ref.set(min, next)
+
+						if (Duration.lessThan(next, Duration.times(yield* min, yield* slack))) {
+							return yield* up()
+						} else {
+							return yield* down()
+						}
+					})
+				)
+			)
+		)
+	)
 })
 
 const MainLive = Layer.mergeAll(DispatcherClient.Default, CollectorClient.Default).pipe(

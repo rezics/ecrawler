@@ -41,9 +41,7 @@ export default Layer.unwrapEffect(
 						.update(schema.results)
 						.set({
 							...(payload.by !== undefined && {by: payload.by}),
-							...(payload.tags !== undefined && {
-								tags: Array.fromIterable(payload.tags)
-							}),
+							...(payload.tags !== undefined && {tags: Array.fromIterable(payload.tags)}),
 							...(payload.link !== undefined && {link: payload.link}),
 							...(payload.data !== undefined && {data: payload.data})
 						})

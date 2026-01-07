@@ -1,18 +1,14 @@
 import {Effect} from "effect"
 import {Task} from "@ecrawler/schemas/task"
 
-export interface DataExtractor {
+interface BaseExtractor<I, O> {
 	readonly name: string
 	readonly tags: readonly string[]
-	readonly init: Effect.Effect<
-		(task: typeof Task.Type) => Effect.Effect<any[]>
-	>
+	readonly init: Effect.Effect<(i: I) => Effect.Effect<O[]>>
 }
 
-export interface LinkExtractor {
-	readonly name: string
-	readonly tags: readonly string[]
-	readonly init: Effect.Effect<
-		(task: typeof Task.Type) => Effect.Effect<string[]>
-	>
-}
+export type DataExtractor = BaseExtractor<typeof Task.Type, any> & {readonly role: "data"}
+
+export type LinkExtractor = BaseExtractor<typeof Task.Type, string> & {readonly role: "link"}
+
+export type Extractor = DataExtractor | LinkExtractor

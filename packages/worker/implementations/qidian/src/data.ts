@@ -10,8 +10,9 @@ import {Book} from "@ecrawler/schemas/book"
  * 起点中文网书籍元数据爬虫。
  */
 export default {
-	name: "qidian",
-	tags: ["qidian"],
+	name: "qidian.com",
+	tags: ["qidian.com"],
+	role: "data",
 	init: Effect.scoped(
 		Effect.gen(function* () {
 			const queue = yield* Queue.unbounded<Book>()
@@ -41,7 +42,7 @@ export default {
 											identifiers: {url: request.url},
 											languages: "zh-CN",
 											length: pipe(data.length, parseChineseNumber, Option.getOrUndefined)
-										} as const satisfies Book)
+										}) as const satisfies Book
 								),
 								Effect.tap(book => Queue.offer(queue, book)),
 								Effect.asVoid,
@@ -62,13 +63,7 @@ export default {
 } as const satisfies DataExtractor
 
 /** Chinese unit multipliers */
-const multipliers: Record<string, number> = {
-	十: 10,
-	百: 100,
-	千: 1000,
-	万: 10000,
-	亿: 100000000
-}
+const multipliers: Record<string, number> = {十: 10, 百: 100, 千: 1000, 万: 10000, 亿: 100000000}
 
 /**
  * Parse Chinese number string (e.g. "10万") to numeric value.

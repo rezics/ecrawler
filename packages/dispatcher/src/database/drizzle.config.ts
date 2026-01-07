@@ -5,9 +5,7 @@ import {Config, Effect, Redacted} from "effect"
 const config = DatabaseConfig.pipe(Config.unwrap, Effect.runSync)
 
 export default defineConfig({
-	dbCredentials: {
-		url: Redacted.value(config.url)
-	},
+	dbCredentials: {url: Redacted.value(config.url)},
 	dialect: "postgresql",
 	schema: "./schema.ts",
 	out: "./migrations"

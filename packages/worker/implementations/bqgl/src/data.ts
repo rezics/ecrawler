@@ -10,8 +10,9 @@ import {isNonEmpty} from "effect/String"
  * 笔趣阁书籍元数据爬虫。
  */
 export default {
-	name: "bqgl",
-	tags: ["bqgl"],
+	name: "bqgl.cc",
+	tags: ["bqgl.cc"],
+	role: "data",
 	init: Effect.scoped(
 		Effect.gen(function* () {
 			const queue = yield* Queue.unbounded<Book>()
@@ -33,10 +34,7 @@ export default {
 									title: isNonEmpty(title) ? title : undefined,
 									authors: isNonEmpty(author) ? [author] : undefined,
 									description: isNonEmpty(description) ? description : undefined,
-									identifiers: {
-										url: request.url,
-										dirid
-									},
+									identifiers: {url: request.url, dirid},
 									languages: "zh-CN",
 									ongoing: isNonEmpty(ongoing) ? ongoing.includes("连载") : undefined
 								}

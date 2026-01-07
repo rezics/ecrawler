@@ -17,10 +17,7 @@ export default Layer.unwrapEffect(
 				.handle("createTask", ({payload}) =>
 					drizzle
 						.insert(schema.tasks)
-						.values({
-							tags: Array.fromIterable(payload.tags),
-							link: payload.link
-						})
+						.values({tags: Array.fromIterable(payload.tags), link: payload.link})
 						.returning({id: schema.tasks.id})
 						.pipe(Effect.flatMap(Array.head), UnknownError.mapError)
 				)
@@ -39,10 +36,7 @@ export default Layer.unwrapEffect(
 				.handle("updateTask", ({path, payload}) =>
 					drizzle
 						.update(schema.tasks)
-						.set({
-							tags: payload.tags ? Array.fromIterable(payload.tags) : undefined,
-							link: payload.link
-						})
+						.set({tags: payload.tags ? Array.fromIterable(payload.tags) : undefined, link: payload.link})
 						.where(eq(schema.tasks.id, path.id))
 						.returning()
 						.pipe(
