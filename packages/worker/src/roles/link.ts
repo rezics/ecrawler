@@ -18,7 +18,7 @@ export const initLink = (worker: LinkExtractor) =>
 
 			yield* pipe(
 				yield* processor(task),
-				Array.map(result => dispatcher.createTask({payload: {link: result, tags: tags}})),
+				Array.map(result => dispatcher.createTask({payload: {link: result, tags: [...task.tags, "data"]}})),
 				Effect.allWith({concurrency: "unbounded"}),
 				Effect.asVoid
 			)

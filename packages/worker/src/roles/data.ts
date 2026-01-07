@@ -21,7 +21,7 @@ export const initData = (worker: DataExtractor) =>
 			yield* pipe(
 				yield* processor(task),
 				Array.map(result =>
-					collector.createResult({payload: {by: config.id, tags, link: task.link, data: result}})
+					collector.createResult({payload: {by: config.id, tags: task.tags, link: task.link, data: result}})
 				),
 				Effect.allWith({concurrency: "unbounded"}),
 				Effect.asVoid
