@@ -2,6 +2,10 @@
 	"name": "@ecrawler/collector",
 	"type": "module",
 	"private": true,
+	"scripts": {
+		"start": "tsx ./src/main.ts",
+		"dev": "HOST=0.0.0.0 PORT=2334 yarn run start"
+	},
 	"dependencies": {
 		"@ecrawler/api": "workspace:*",
 		"@ecrawler/core": "workspace:*",

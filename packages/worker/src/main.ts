@@ -38,7 +38,7 @@ const program = Effect.gen(function* () {
 
 	const window = Array.length(processors)
 	const limit = yield* Ref.make(1)
-	const cap = yield* Ref.make(config.limit)
+	const cap = yield* Ref.make(config.capacity)
 	const alpha = yield* Ref.make(0.3)
 	const slack = yield* Ref.make(1.5)
 	const ema = yield* Ref.make(Duration.zero)
@@ -54,6 +54,14 @@ const program = Effect.gen(function* () {
 	const gate = yield* limit.pipe(Effect.flatMap(n => Effect.makeSemaphore(n)))
 	const stream = Stream.repeat(Stream.fromIterable(processors), Schedule.forever)
 	const stats = yield* Ref.make(Chunk.empty<Duration.Duration>())
+
+	yield* Effect.repeat(
+		Effect.gen(function* () {
+			yield* down()
+			yield* Ref.set(min, yield* ema)
+		}),
+		Schedule.spaced(Duration.minutes(5))
+	).pipe(Effect.fork)
 
 	return yield* Stream.runForEach(stream, task =>
 		gate.withPermits(1)(

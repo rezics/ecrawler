@@ -2,15 +2,15 @@
 	"name": "@ecrawler/dispatcher",
 	"type": "module",
 	"private": true,
+	"scripts": {
+		"start": "tsx ./src/main.ts",
+		"dev": "HOST=0.0.0.0 PORT=2333 yarn run start"
+	},
 	"dependencies": {
 		"@ecrawler/api": "workspace:*",
 		"@ecrawler/core": "workspace:*",
 		"@ecrawler/schemas": "workspace:*",
 		"drizzle-kit": "~0.31.8"
-	},
-	"scripts": {
-		"start": "bun run src/main.ts",
-		"dev": "bun --watch src/main.ts"
 	},
 	"exports": {
 		".": "./src/main.ts",

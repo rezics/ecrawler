@@ -58,12 +58,6 @@ export default HttpApiGroup.make("dispatcher")
 	)
 	.addError(UnknownError)
 	.add(
-		HttpApiEndpoint.head("health")`/health`
-			.addSuccess(Schema.Void)
-			.annotate(OpenApi.Summary, "Check health status")
-			.annotate(OpenApi.Description, "Checks if the dispatcher service is healthy\n\n检查调度器服务是否健康")
-	)
-	.add(
 		HttpApiEndpoint.post("createTask")`/tasks`
 			.setPayload(CreatePayload)
 			.addSuccess(Schema.Struct({id: Schema.UUID}))

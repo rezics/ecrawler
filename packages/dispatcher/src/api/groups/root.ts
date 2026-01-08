@@ -13,7 +13,6 @@ export default Layer.unwrapEffect(
 
 		return HttpApiBuilder.group(Api, "dispatcher", handlers =>
 			handlers
-				.handle("health", () => Effect.succeed(void {}))
 				.handle("createTask", ({payload}) =>
 					drizzle
 						.insert(schema.tasks)

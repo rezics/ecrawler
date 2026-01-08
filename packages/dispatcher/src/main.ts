@@ -1,4 +1,3 @@
-import "dotenv/config"
 import {Effect, Layer} from "effect"
 import api from "./api/index.ts"
 import {DatabaseLive} from "./database/client.ts"

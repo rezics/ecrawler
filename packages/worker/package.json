@@ -3,8 +3,8 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"start": "bun run src/main.ts",
-		"dev": "bun --watch src/main.ts"
+		"start": "tsx ./src/main.ts",
+		"dev": "DISPATCHER_BASE_URL=http://localhost:2333 COLLECTOR_BASE_URL=http://localhost:2334 WORKERS=@ecrawler/worker-dummy/data.ts,@ecrawler/worker-dummy/link.ts yarn run start"
 	},
 	"exports": {
 		".": "./src/main.ts",
@@ -13,7 +13,10 @@
 	},
 	"dependencies": {
 		"@ecrawler/api": "workspace:*",
-		"@ecrawler/schemas": "workspace:*"
+		"@ecrawler/schemas": "workspace:*",
+		"@ecrawler/worker-bqgl": "workspace:^",
+		"@ecrawler/worker-dummy": "workspace:^",
+		"@ecrawler/worker-qidian": "workspace:^"
 	},
 	"workspaces": [
 		"./implementations/*"
