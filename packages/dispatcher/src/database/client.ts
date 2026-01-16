@@ -1,5 +1,11 @@
-import * as PgDrizzle from "@effect/sql-drizzle/Pg"
 import * as schema from "./schema.ts"
-export {DatabaseLive} from "@ecrawler/core/database/layer.ts"
+import {Effect, Redacted} from "effect"
+import {ServerConfig} from "@ecrawler/core/server/config.js"
+import {drizzle} from "drizzle-orm/postgres-js"
 
-export const Database = PgDrizzle.make({schema})
+export class Database extends Effect.Service<Database>()("@ecrawler/dispatcher/database/client/Database", {
+	effect: Effect.gen(function* () {
+		const config = yield* ServerConfig
+		return drizzle(Redacted.value(config.database.url), {schema})
+	})
+}) {}

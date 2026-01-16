@@ -2,7 +2,7 @@ import {Effect, pipe, Array} from "effect"
 import {WorkerConfig} from "../config"
 import DispatcherClient from "../clients/dispatcher"
 import CollectorClient from "../clients/collector"
-import type {DataExtractor} from "../interfaces"
+import type {DataExtractor} from "../interfaces.ts"
 
 export const initData = (worker: DataExtractor) =>
 	Effect.gen(function* () {

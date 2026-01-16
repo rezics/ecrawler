@@ -1,5 +1,5 @@
 import {Chunk, Effect, Option, Queue} from "effect"
-import type {DataExtractor} from "@ecrawler/worker/interfaces"
+import type {DataExtractor} from "@ecrawler/worker/interfaces.ts"
 import {CheerioCrawler} from "crawlee"
 import {Book} from "@ecrawler/schemas/book"
 import {isNonEmpty} from "effect/String"

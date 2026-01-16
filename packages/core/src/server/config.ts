@@ -1,6 +1,7 @@
 import {Config} from "effect"
 
 export const ServerConfig = Config.all({
-	host: Config.string("HOST").pipe(Config.withDefault("0.0.0.0")),
-	port: Config.number("PORT").pipe(Config.withDefault(3000))
+	host: Config.string("HOST"),
+	port: Config.number("PORT"),
+	database: Config.all({url: Config.redacted(Config.string("DATABASE_URL"))})
 }).pipe(Config.unwrap)

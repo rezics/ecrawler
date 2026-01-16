@@ -1,5 +1,5 @@
 import {Duration, Effect, Random} from "effect"
-import type {DataExtractor} from "@ecrawler/worker/interfaces"
+import type {DataExtractor} from "@ecrawler/worker/interfaces.ts"
 
 /**
  * Dummy data extractor for testing purposes.

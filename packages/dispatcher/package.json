@@ -12,7 +12,8 @@
 		"@ecrawler/api": "workspace:*",
 		"@ecrawler/core": "workspace:*",
 		"@ecrawler/schemas": "workspace:*",
-		"drizzle-kit": "~0.31.8"
+		"drizzle-kit": "~0.31.8",
+		"postgres": "^3.4.8"
 	},
 	"exports": {
 		".": "./src/main.ts",

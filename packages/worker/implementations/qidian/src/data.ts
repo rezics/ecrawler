@@ -1,5 +1,5 @@
 import {Chunk, Effect, Option, pipe, Queue, Record, String} from "effect"
-import type {DataExtractor} from "@ecrawler/worker/interfaces"
+import type {DataExtractor} from "@ecrawler/worker/interfaces.ts"
 import {PlaywrightCrawler} from "crawlee"
 import {isNotUndefined} from "effect/Predicate"
 import {Book} from "@ecrawler/schemas/book"

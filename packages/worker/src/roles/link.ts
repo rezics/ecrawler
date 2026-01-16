@@ -1,7 +1,7 @@
 import {Effect, pipe, Array} from "effect"
 import {WorkerConfig} from "../config"
 import DispatcherClient from "../clients/dispatcher"
-import type {LinkExtractor} from "../interfaces"
+import type {LinkExtractor} from "../interfaces.ts"
 
 export const initLink = (worker: LinkExtractor) =>
 	Effect.gen(function* () {

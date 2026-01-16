@@ -1,5 +1,5 @@
 import {Array, Duration, Effect, Random} from "effect"
-import type {LinkExtractor} from "@ecrawler/worker/interfaces"
+import type {LinkExtractor} from "@ecrawler/worker/interfaces.ts"
 import {faker} from "@faker-js/faker"
 
 /**

@@ -1,5 +1,5 @@
 import {Array, Chunk, Effect, pipe, Predicate, Queue, Schema} from "effect"
-import type {LinkExtractor} from "@ecrawler/worker/interfaces"
+import type {LinkExtractor} from "@ecrawler/worker/interfaces.ts"
 import {CheerioCrawler} from "crawlee"
 
 /**

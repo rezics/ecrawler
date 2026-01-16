@@ -1,9 +1,9 @@
 import {Effect, Layer} from "effect"
 import api from "./api/index.ts"
-import {DatabaseLive} from "./database/client.ts"
+import {Database} from "./database/client.ts"
 import {NodeRuntime} from "@effect/platform-node"
 
-const ApiLayer = api.pipe(Layer.provide(DatabaseLive))
+const ApiLayer = api.pipe(Layer.provide(Database.Default))
 
 const program = Effect.gen(function* () {
 	yield* Effect.log("Starting Dispatcher Server...")

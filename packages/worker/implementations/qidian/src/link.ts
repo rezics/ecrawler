@@ -1,6 +1,6 @@
 // @ts-nocheck TODO
 
-import type {LinkExtractor} from "@ecrawler/worker/interfaces"
+import type {LinkExtractor} from "@ecrawler/worker/interfaces.ts"
 import {Effect} from "effect"
 
 export default {
