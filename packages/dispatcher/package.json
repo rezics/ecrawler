@@ -3,8 +3,10 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"start": "tsx ./src/main.ts",
-		"dev": "HOST=0.0.0.0 PORT=2333 yarn run start"
+		"start": "tsx --env-file=.env.production ./src/main.ts",
+		"dev": "tsx --env-file=.env.development ./src/main.ts",
+		"generate": "cd ./src/database && drizzle-kit generate",
+		"migrate": "cd ./src/database && drizzle-kit migrate"
 	},
 	"dependencies": {
 		"@ecrawler/api": "workspace:*",

@@ -4,8 +4,8 @@ CREATE TABLE "tasks" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"tags" text[] DEFAULT '{}' NOT NULL,
-	"data" jsonb NOT NULL,
-	CONSTRAINT "tasks_data_unique" UNIQUE("data")
+	"link" text NOT NULL,
+	CONSTRAINT "tasks_link_unique" UNIQUE("link")
 );
 --> statement-breakpoint
 CREATE TABLE "token" (

@@ -3,13 +3,11 @@
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"start": "tsx ./src/main.ts",
-		"dev": "DISPATCHER_BASE_URL=http://localhost:2333 COLLECTOR_BASE_URL=http://localhost:2334 WORKERS=@ecrawler/worker-dummy/data.ts,@ecrawler/worker-dummy/link.ts yarn run start"
+		"start": "tsx --env-file=.env.production ./src/main.ts",
+		"dev": "tsx --env-file=.env.development ./src/main.ts"
 	},
 	"exports": {
-		".": "./src/main.ts",
-		"./interfaces": "./src/interfaces.ts",
-		"./clients": "./src/clients/index.ts"
+		"./*": "./src/*"
 	},
 	"dependencies": {
 		"@ecrawler/api": "workspace:*",

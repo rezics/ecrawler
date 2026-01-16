@@ -1,5 +1,5 @@
 {
-  "id": "50cd75d5-f5f9-446a-833a-d96491f257a6",
+  "id": "04fa27dd-112d-4810-a266-ca4dee4f337d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -41,9 +41,9 @@
           "notNull": true,
           "default": "'{}'"
         },
-        "data": {
-          "name": "data",
-          "type": "jsonb",
+        "link": {
+          "name": "link",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         }
@@ -52,11 +52,11 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "tasks_data_unique": {
-          "name": "tasks_data_unique",
+        "tasks_link_unique": {
+          "name": "tasks_link_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "data"
+            "link"
           ]
         }
       },
