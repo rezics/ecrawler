@@ -1,10 +1,9 @@
 import {Effect, pipe, Array} from "effect"
-import {WorkerConfig} from "../config"
-import DispatcherClient from "../clients/dispatcher"
-import CollectorClient from "../clients/collector"
-import type {DataExtractor} from "../interfaces.ts"
+import {WorkerConfig} from "../config.ts"
+import DispatcherClient from "../clients/dispatcher.ts"
+import type {LinkExtractor} from "../interfaces.ts"
 
-export const initData = (worker: DataExtractor) =>
+export const initLink = (worker: LinkExtractor) =>
 	Effect.gen(function* () {
 		const processor = yield* worker.init
 
@@ -12,15 +11,14 @@ export const initData = (worker: DataExtractor) =>
 		return Effect.gen(function* () {
 			const config = yield* WorkerConfig
 			const {dispatcher} = yield* DispatcherClient
-			const {collector} = yield* CollectorClient
 
-			const tags = Array.append(worker.tags, "data")
+			const tags = Array.append(worker.tags, "link")
 			const task = yield* dispatcher.nextTask({payload: {by: config.id}, urlParams: {tags, timeout: 30}})
 
 			yield* pipe(
 				yield* processor(task),
 				Array.map(result =>
-					collector.createResult({payload: {by: config.id, tags: task.tags, link: task.link, data: result}})
+					dispatcher.createTask({payload: {link: result, tags: Array.append(task.tags, "data")}})
 				),
 				Effect.allWith({concurrency: "unbounded"}),
 				Effect.asVoid

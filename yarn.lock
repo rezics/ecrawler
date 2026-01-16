@@ -445,18 +445,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ecrawler/api@workspace:*, @ecrawler/api@workspace:packages/api":
+"@ecrawler/api@workspace:*, @ecrawler/api@workspace:libs/api":
   version: 0.0.0-use.local
-  resolution: "@ecrawler/api@workspace:packages/api"
+  resolution: "@ecrawler/api@workspace:libs/api"
   dependencies:
     "@ecrawler/core": "workspace:*"
     "@ecrawler/schemas": "workspace:*"
   languageName: unknown
   linkType: soft
 
-"@ecrawler/collector@workspace:packages/collector":
+"@ecrawler/collector@workspace:apps/collector":
   version: 0.0.0-use.local
-  resolution: "@ecrawler/collector@workspace:packages/collector"
+  resolution: "@ecrawler/collector@workspace:apps/collector"
   dependencies:
     "@ecrawler/api": "workspace:*"
     "@ecrawler/core": "workspace:*"
@@ -465,15 +465,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ecrawler/core@workspace:*, @ecrawler/core@workspace:packages/core":
+"@ecrawler/core@workspace:*, @ecrawler/core@workspace:libs/core":
   version: 0.0.0-use.local
-  resolution: "@ecrawler/core@workspace:packages/core"
+  resolution: "@ecrawler/core@workspace:libs/core"
   languageName: unknown
   linkType: soft
 
-"@ecrawler/dispatcher@workspace:packages/dispatcher":
+"@ecrawler/dispatcher@workspace:apps/dispatcher":
   version: 0.0.0-use.local
-  resolution: "@ecrawler/dispatcher@workspace:packages/dispatcher"
+  resolution: "@ecrawler/dispatcher@workspace:apps/dispatcher"
   dependencies:
     "@ecrawler/api": "workspace:*"
     "@ecrawler/core": "workspace:*"
@@ -483,21 +483,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ecrawler/proxy@workspace:packages/proxy":
+"@ecrawler/proxy@workspace:libs/proxy":
   version: 0.0.0-use.local
-  resolution: "@ecrawler/proxy@workspace:packages/proxy"
+  resolution: "@ecrawler/proxy@workspace:libs/proxy"
   languageName: unknown
   linkType: soft
 
-"@ecrawler/schemas@workspace:*, @ecrawler/schemas@workspace:packages/schemas":
+"@ecrawler/schemas@workspace:*, @ecrawler/schemas@workspace:libs/schemas":
   version: 0.0.0-use.local
-  resolution: "@ecrawler/schemas@workspace:packages/schemas"
+  resolution: "@ecrawler/schemas@workspace:libs/schemas"
   languageName: unknown
   linkType: soft
 
-"@ecrawler/worker-bqgl@workspace:^, @ecrawler/worker-bqgl@workspace:packages/worker/implementations/bqgl":
+"@ecrawler/worker-bqgl@workspace:^, @ecrawler/worker-bqgl@workspace:apps/worker/implementations/bqgl":
   version: 0.0.0-use.local
-  resolution: "@ecrawler/worker-bqgl@workspace:packages/worker/implementations/bqgl"
+  resolution: "@ecrawler/worker-bqgl@workspace:apps/worker/implementations/bqgl"
   dependencies:
     "@ecrawler/schemas": "workspace:*"
     "@ecrawler/worker": "workspace:*"
@@ -506,9 +506,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ecrawler/worker-dummy@workspace:^, @ecrawler/worker-dummy@workspace:packages/worker/implementations/dummy":
+"@ecrawler/worker-dummy@workspace:^, @ecrawler/worker-dummy@workspace:apps/worker/implementations/dummy":
   version: 0.0.0-use.local
-  resolution: "@ecrawler/worker-dummy@workspace:packages/worker/implementations/dummy"
+  resolution: "@ecrawler/worker-dummy@workspace:apps/worker/implementations/dummy"
   dependencies:
     "@ecrawler/schemas": "workspace:*"
     "@ecrawler/worker": "workspace:*"
@@ -516,9 +516,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ecrawler/worker-qidian@workspace:^, @ecrawler/worker-qidian@workspace:packages/worker/implementations/qidian":
+"@ecrawler/worker-qidian@workspace:^, @ecrawler/worker-qidian@workspace:apps/worker/implementations/qidian":
   version: 0.0.0-use.local
-  resolution: "@ecrawler/worker-qidian@workspace:packages/worker/implementations/qidian"
+  resolution: "@ecrawler/worker-qidian@workspace:apps/worker/implementations/qidian"
   dependencies:
     "@ecrawler/schemas": "workspace:*"
     "@ecrawler/worker": "workspace:*"
@@ -527,9 +527,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ecrawler/worker@workspace:*, @ecrawler/worker@workspace:packages/worker":
+"@ecrawler/worker@workspace:*, @ecrawler/worker@workspace:apps/worker":
   version: 0.0.0-use.local
-  resolution: "@ecrawler/worker@workspace:packages/worker"
+  resolution: "@ecrawler/worker@workspace:apps/worker"
   dependencies:
     "@ecrawler/api": "workspace:*"
     "@ecrawler/schemas": "workspace:*"
@@ -1616,17 +1616,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pg@npm:^8.16.0":
-  version: 8.16.0
-  resolution: "@types/pg@npm:8.16.0"
-  dependencies:
-    "@types/node": "npm:*"
-    pg-protocol: "npm:*"
-    pg-types: "npm:^2.2.0"
-  checksum: 10c0/421fe7c07d5c0226835d362414a63653f86251ee966150d807ed60174c13921d1b8a3e2f1c2bfba9659ec0282ca50974030c4c1efcd575003eb922ea12ca7d05
-  languageName: node
-  linkType: hard
-
 "@types/sax@npm:^1.2.7":
   version: 1.2.7
   resolution: "@types/sax@npm:1.2.7"
@@ -2361,11 +2350,9 @@ __metadata:
     "@effect/sql-pg": "npm:^0.50.1"
     "@effect/workflow": "npm:^0.16.0"
     "@types/node": "npm:^25.0.3"
-    "@types/pg": "npm:^8.16.0"
     dotenv: "npm:^17.2.3"
     drizzle-orm: "npm:^0.45.1"
     effect: "npm:^3.19.14"
-    pg: "npm:^8.17.1"
     prettier: "npm:^3.7.4"
     tsx: "npm:^4.21.0"
     typescript: "npm:^5.9.3"
@@ -4034,24 +4021,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-cloudflare@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "pg-cloudflare@npm:1.3.0"
-  checksum: 10c0/b0866c88af8e54c7b3ed510719d92df37714b3af5e3a3a10d9f761fcec99483e222f5b78a1f2de590368127648087c45c01aaf66fadbe46edb25673eedc4f8fc
-  languageName: node
-  linkType: hard
-
 "pg-connection-string@npm:2.9.1, pg-connection-string@npm:^2.9.1":
   version: 2.9.1
   resolution: "pg-connection-string@npm:2.9.1"
   checksum: 10c0/9a646529bbc0843806fc5de98ce93735a4612b571f11867178a85665d11989a827e6fd157388ca0e34ec948098564fce836c178cfd499b9f0e8cd9972b8e2e5c
-  languageName: node
-  linkType: hard
-
-"pg-connection-string@npm:^2.10.0":
-  version: 2.10.0
-  resolution: "pg-connection-string@npm:2.10.0"
-  checksum: 10c0/6639d3e12f66bc3cc5fa1e5794b4b22a4212e30424cbf001422e041c77c598ee0cd19395a9d79cb99a962da612b03c021e8148c3437cf01a29a18437bad193eb
   languageName: node
   linkType: hard
 
@@ -4087,22 +4060,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-pool@npm:^3.11.0":
-  version: 3.11.0
-  resolution: "pg-pool@npm:3.11.0"
-  peerDependencies:
-    pg: ">=8.0"
-  checksum: 10c0/4b104b48a47257a0edad0c62e5ea1908b72cb79386270264b452e69895e9e4c589d00cdbf6e46d4e9c05bc7e7d191656b66814b5282d65f33b12648a21df3c7f
-  languageName: node
-  linkType: hard
-
-"pg-protocol@npm:*, pg-protocol@npm:^1.11.0":
-  version: 1.11.0
-  resolution: "pg-protocol@npm:1.11.0"
-  checksum: 10c0/93e83581781418c9173eba4e4545f73392cfe66b78dd1d3624d7339fbd37e7f4abebaf2615e68e0701a9bf0edf5b81a4ad533836f388f775fe25fa24a691c464
-  languageName: node
-  linkType: hard
-
 "pg-protocol@npm:^1.10.3":
   version: 1.10.3
   resolution: "pg-protocol@npm:1.10.3"
@@ -4110,7 +4067,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-types@npm:2.2.0, pg-types@npm:^2.2.0":
+"pg-types@npm:2.2.0":
   version: 2.2.0
   resolution: "pg-types@npm:2.2.0"
   dependencies:
@@ -4157,28 +4114,6 @@ __metadata:
     pg-native:
       optional: true
   checksum: 10c0/a6a407ff0efb7599760d72ffdcda47a74c34c0fd71d896623caac45cf2cfb0f49a10973cce23110f182b9810639a1e9f6904454d7358c7001574ee0ffdcbce2a
-  languageName: node
-  linkType: hard
-
-"pg@npm:^8.17.1":
-  version: 8.17.1
-  resolution: "pg@npm:8.17.1"
-  dependencies:
-    pg-cloudflare: "npm:^1.3.0"
-    pg-connection-string: "npm:^2.10.0"
-    pg-pool: "npm:^3.11.0"
-    pg-protocol: "npm:^1.11.0"
-    pg-types: "npm:2.2.0"
-    pgpass: "npm:1.0.5"
-  peerDependencies:
-    pg-native: ">=3.0.1"
-  dependenciesMeta:
-    pg-cloudflare:
-      optional: true
-  peerDependenciesMeta:
-    pg-native:
-      optional: true
-  checksum: 10c0/39a92391adfc73f793d195b4062bc2d21aa3537073e3973f3979d72901d92a59e129f31f42577ff916038a6c3f9fe423b6024717529609ae8548fda21248cfe7
   languageName: node
   linkType: hard
 

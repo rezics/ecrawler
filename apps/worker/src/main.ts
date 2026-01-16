@@ -1,12 +1,12 @@
 import "dotenv/config"
 import {Array, Effect, pipe, Layer, Match, Ref, Duration, Stream, Schedule, Chunk, Either} from "effect"
-import CollectorClient from "./clients/collector"
-import DispatcherClient from "./clients/dispatcher"
-import {WorkerConfig} from "./config"
+import CollectorClient from "./clients/collector.ts"
+import DispatcherClient from "./clients/dispatcher.ts"
+import {WorkerConfig} from "./config.ts"
 import type {Extractor} from "./interfaces.ts"
 import {NodeRuntime, NodeHttpClient} from "@effect/platform-node"
-import {initData} from "./roles/data"
-import {initLink} from "./roles/link"
+import {initData} from "./roles/data.ts"
+import {initLink} from "./roles/link.ts"
 
 const init = (worker: Extractor) =>
 	Match.value(worker).pipe(

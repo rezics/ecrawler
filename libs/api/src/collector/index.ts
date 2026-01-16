@@ -11,4 +11,4 @@ export const Collector = HttpApi.make("Collector")
 	)
 
 export default Collector
-export * from "./groups/root"
+export * from "./groups/root.ts"
