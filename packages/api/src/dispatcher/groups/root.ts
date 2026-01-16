@@ -51,6 +51,18 @@ export const NextPayload = Schema.Struct({
 	description: "Payload for getting the next task\n\n获取下一个任务的载荷"
 })
 
+export const NextQueryParams = QueryParams.pipe(
+	Schema.omit("limit"),
+	Schema.extend(
+		Schema.Struct({
+			timeout: Schema.NumberFromString.annotations({
+				description:
+					"Long polling timeout in seconds. Server will wait up to this duration for a task to become available before returning 404.\n\n长轮询超时时间（秒）。服务器将等待最多此时长直到有任务可用，否则返回 404。"
+			}).pipe(Schema.between(0, 30))
+		}).pipe(Schema.partial)
+	)
+)
+
 export default HttpApiGroup.make("dispatcher")
 	.annotate(
 		OpenApi.Description,
@@ -95,12 +107,12 @@ export default HttpApiGroup.make("dispatcher")
 	.add(
 		HttpApiEndpoint.post("nextTask")`/tasks/next`
 			.setPayload(NextPayload)
-			.setUrlParams(QueryParams.pipe(Schema.omit("limit")))
+			.setUrlParams(NextQueryParams)
 			.addSuccess(Task)
 			.addError(TaskNotFoundError)
 			.annotate(OpenApi.Summary, "Get next task")
 			.annotate(
 				OpenApi.Description,
-				"Fetches the next oldest available task matching the provided query filters\n\n获取匹配提供查询过滤器的下一个最旧可用任务"
+				"Fetches the next oldest available task matching the provided query filters.\n\n获取匹配提供查询过滤器的下一个最旧可用任务。"
 			)
 	)

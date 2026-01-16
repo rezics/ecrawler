@@ -12,13 +12,14 @@ export const initLink = (worker: LinkExtractor) =>
 			const config = yield* WorkerConfig
 			const {dispatcher} = yield* DispatcherClient
 
-			const tags = [...worker.tags, "link"]
-
-			const task = yield* dispatcher.nextTask({payload: {by: config.id}, urlParams: {tags}})
+			const tags = Array.append(worker.tags, "link")
+			const task = yield* dispatcher.nextTask({payload: {by: config.id}, urlParams: {tags, timeout: 30}})
 
 			yield* pipe(
 				yield* processor(task),
-				Array.map(result => dispatcher.createTask({payload: {link: result, tags: [...task.tags, "data"]}})),
+				Array.map(result =>
+					dispatcher.createTask({payload: {link: result, tags: Array.append(task.tags, "data")}})
+				),
 				Effect.allWith({concurrency: "unbounded"}),
 				Effect.asVoid
 			)

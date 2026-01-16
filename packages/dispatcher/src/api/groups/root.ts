@@ -1,15 +1,15 @@
 import Api from "@ecrawler/api/dispatcher/index.ts"
 import {TaskNotFoundError} from "@ecrawler/api/dispatcher/groups/root.ts"
 import {HttpApiBuilder} from "@effect/platform"
-import {PgDrizzle} from "@effect/sql-drizzle/Pg"
-import {Array, Effect, flow, Layer, Match} from "effect"
+import {Array, Effect, flow, Layer, Match, Schedule, Duration} from "effect"
 import * as schema from "../../database/schema.ts"
 import {and, arrayContained, eq, gte, lt, SQL, asc, isNull} from "drizzle-orm"
 import {UnknownError} from "@ecrawler/core/api/error.js"
+import {Database} from "../../database/client.ts"
 
 export default Layer.unwrapEffect(
 	Effect.gen(function* () {
-		const drizzle = yield* PgDrizzle
+		const drizzle = yield* Database
 
 		return HttpApiBuilder.group(Api, "dispatcher", handlers =>
 			handlers
@@ -65,8 +65,8 @@ export default Layer.unwrapEffect(
 						.offset(urlParams.offset ?? 0)
 						.pipe(UnknownError.mapError)
 				)
-				.handle("nextTask", ({payload, urlParams}) =>
-					Effect.tryPromise(() =>
+				.handle("nextTask", ({payload, urlParams}) => {
+					const claimTask = Effect.tryPromise(() =>
 						drizzle.transaction(async tx => {
 							const [task] = await tx
 								.select()
@@ -106,10 +106,22 @@ export default Layer.unwrapEffect(
 								Match.when(Match.defined, v => Effect.succeed(v)),
 								Match.orElse(() => Effect.fail(new TaskNotFoundError()))
 							)
-						),
+						)
+					)
+
+					const timeout = urlParams.timeout ?? 0
+					const maxTimeout = 60
+
+					return claimTask.pipe(
+						Effect.retry({
+							while: error => error instanceof TaskNotFoundError && timeout > 0,
+							schedule: Schedule.spaced(Duration.seconds(2)).pipe(
+								Schedule.upTo(Duration.seconds(Math.min(timeout, maxTimeout)))
+							)
+						}),
 						UnknownError.mapError
 					)
-				)
+				})
 		)
 	})
 )

@@ -1,4 +1,4 @@
-import {Effect} from "effect"
+import {Duration, Effect, Random} from "effect"
 import type {DataExtractor} from "@ecrawler/worker/interfaces"
 
 /**
@@ -13,7 +13,7 @@ export default {
 	init: Effect.succeed(task =>
 		Effect.gen(function* () {
 			yield* Effect.log(`[dummy/data] Processing task: ${task.link}`)
-			yield* Effect.sleep("100 millis")
+			yield* Effect.sleep(Duration.millis(yield* Random.nextIntBetween(200, 500)))
 			return [{source: "dummy", link: task.link, extractedAt: new Date().toISOString()}]
 		})
 	)

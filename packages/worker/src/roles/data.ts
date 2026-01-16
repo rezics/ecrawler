@@ -14,9 +14,8 @@ export const initData = (worker: DataExtractor) =>
 			const {dispatcher} = yield* DispatcherClient
 			const {collector} = yield* CollectorClient
 
-			const tags = [...worker.tags, "data"]
-
-			const task = yield* dispatcher.nextTask({payload: {by: config.id}, urlParams: {tags}})
+			const tags = Array.append(worker.tags, "data")
+			const task = yield* dispatcher.nextTask({payload: {by: config.id}, urlParams: {tags, timeout: 30}})
 
 			yield* pipe(
 				yield* processor(task),

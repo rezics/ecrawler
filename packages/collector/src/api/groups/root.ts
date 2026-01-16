@@ -1,14 +1,14 @@
 import Api, {ResultNotFoundError} from "@ecrawler/api/collector/index.ts"
 import {HttpApiBuilder} from "@effect/platform"
-import {PgDrizzle} from "@effect/sql-drizzle/Pg"
 import {Array, Effect, Layer} from "effect"
 import * as schema from "../../database/schema.ts"
 import {and, arrayContained, eq, gte, lt, SQL} from "drizzle-orm"
 import {UnknownError} from "@ecrawler/core/api/error.js"
+import {Database} from "../../database/client.ts"
 
 export default Layer.unwrapEffect(
 	Effect.gen(function* () {
-		const drizzle = yield* PgDrizzle
+		const drizzle = yield* Database
 
 		return HttpApiBuilder.group(Api, "collector", handlers =>
 			handlers

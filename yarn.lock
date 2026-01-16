@@ -511,6 +511,7 @@ __metadata:
   dependencies:
     "@ecrawler/schemas": "workspace:*"
     "@ecrawler/worker": "workspace:*"
+    "@faker-js/faker": "npm:^10.2.0"
   languageName: unknown
   linkType: soft
 
@@ -1229,6 +1230,13 @@ __metadata:
   version: 0.27.1
   resolution: "@esbuild/win32-x64@npm:0.27.1"
   conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@faker-js/faker@npm:^10.2.0":
+  version: 10.2.0
+  resolution: "@faker-js/faker@npm:10.2.0"
+  checksum: 10c0/72b5048ff32e90b2876560015e177f91b0625dafaaa43631302e413329105be331a1c126c8f7b0f95817cacd51c9222b58e62b6f09f5485522302e6103f19f09
   languageName: node
   linkType: hard
 

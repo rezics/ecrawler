@@ -1,5 +1,5 @@
 import "dotenv/config"
-import {Array, Effect, pipe, Layer, flow, Match, Ref, Duration, Stream, Schedule, Chunk, Either} from "effect"
+import {Array, Effect, pipe, Layer, Match, Ref, Duration, Stream, Schedule, Chunk, Either} from "effect"
 import CollectorClient from "./clients/collector"
 import DispatcherClient from "./clients/dispatcher"
 import {WorkerConfig} from "./config"
@@ -17,21 +17,24 @@ const init = (worker: Extractor) =>
 
 const program = Effect.gen(function* () {
 	const config = yield* WorkerConfig
-	const workers = yield* pipe(
+	const [errors, workers] = yield* pipe(
 		config.workers,
-		Array.map(path => Effect.promise(() => import(path))),
-		Effect.allWith({mode: "either", concurrency: "unbounded"}),
-		Effect.map(
-			flow(
-				Array.getRights,
-				Array.map(module => module.default as Extractor)
-			)
-		)
+		Effect.partition(path => Effect.tryPromise(() => import(path)).pipe(Effect.mapError(() => path)), {
+			concurrency: "unbounded"
+		}),
+		Effect.map(([errors, workers]) => [errors, Array.map(workers, module => module.default as Extractor)] as const)
 	)
+
+	if (Array.length(errors) > 0) {
+		yield* Effect.logWarning(
+			`Failed to load ${Array.length(errors)} worker${Array.length(errors) === 1 ? "" : "s"}:`,
+			errors
+		)
+	}
 
 	yield* Effect.log(
 		`Loaded ${workers.length} worker${workers.length === 1 ? "" : "s"}:`,
-		Array.map(workers, worker => worker.name).join(" ")
+		Array.map(workers, worker => worker.name)
 	)
 
 	const processors = yield* pipe(workers, Array.map(init), Effect.allWith({concurrency: "unbounded"}))

@@ -1,13 +1,13 @@
 import {Auth, AuthError} from "@ecrawler/core/api/auth.js"
 import {Array, Effect, Layer, Redacted} from "effect"
-import {PgDrizzle} from "@effect/sql-drizzle/Pg"
 import * as schema from "../database/schema.ts"
 import {eq} from "drizzle-orm"
 import {UnknownError} from "@ecrawler/core/api/error.js"
+import {Database} from "../database/client.ts"
 
 export default Layer.effect(
 	Auth,
-	PgDrizzle.pipe(
+	Database.pipe(
 		Effect.map(drizzle =>
 			Auth.of({
 				bearer: token =>

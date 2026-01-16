@@ -1,5 +1,6 @@
-import {Effect} from "effect"
+import {Array, Duration, Effect, Random} from "effect"
 import type {LinkExtractor} from "@ecrawler/worker/interfaces"
+import {faker} from "@faker-js/faker"
 
 /**
  * Dummy link extractor for testing purposes.
@@ -13,8 +14,8 @@ export default {
 	init: Effect.succeed(task =>
 		Effect.gen(function* () {
 			yield* Effect.log(`[dummy/link] Processing task: ${task.link}`)
-			yield* Effect.sleep("100 millis")
-			return [`${task.link}/page/1`, `${task.link}/page/2`]
+			yield* Effect.sleep(Duration.millis(yield* Random.nextIntBetween(100, 1000)))
+			return Array.makeBy(yield* Random.nextIntBetween(1, 30), () => `https://www.dummy.com/book/${faker.book.title()}`)
 		})
 	)
 } as const satisfies LinkExtractor
