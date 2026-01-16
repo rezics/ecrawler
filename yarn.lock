@@ -454,6 +454,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@ecrawler/cli@workspace:apps/cli":
+  version: 0.0.0-use.local
+  resolution: "@ecrawler/cli@workspace:apps/cli"
+  dependencies:
+    "@effect/cli": "npm:^0.73.0"
+    "@effect/printer": "npm:^0.47.0"
+    "@effect/printer-ansi": "npm:^0.47.0"
+    "@effect/typeclass": "npm:^0.38.0"
+  languageName: unknown
+  linkType: soft
+
 "@ecrawler/collector@workspace:apps/collector":
   version: 0.0.0-use.local
   resolution: "@ecrawler/collector@workspace:apps/collector"
@@ -538,6 +549,22 @@ __metadata:
     "@ecrawler/worker-qidian": "workspace:^"
   languageName: unknown
   linkType: soft
+
+"@effect/cli@npm:^0.73.0":
+  version: 0.73.0
+  resolution: "@effect/cli@npm:0.73.0"
+  dependencies:
+    ini: "npm:^4.1.3"
+    toml: "npm:^3.0.0"
+    yaml: "npm:^2.5.0"
+  peerDependencies:
+    "@effect/platform": ^0.94.0
+    "@effect/printer": ^0.47.0
+    "@effect/printer-ansi": ^0.47.0
+    effect: ^3.19.13
+  checksum: 10c0/f97684b51be807cdc049c7204f430f7e1b674231eee339eebe62649e4b09dfe1f325153628f283c35f2a33fe06dbe43ff6a84c2f171cd4e636eefba52dc576ff
+  languageName: node
+  linkType: hard
 
 "@effect/cluster@npm:^0.56.1":
   version: 0.56.1
@@ -630,6 +657,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@effect/printer-ansi@npm:^0.47.0":
+  version: 0.47.0
+  resolution: "@effect/printer-ansi@npm:0.47.0"
+  dependencies:
+    "@effect/printer": "npm:^0.47.0"
+  peerDependencies:
+    "@effect/typeclass": ^0.38.0
+    effect: ^3.19.0
+  checksum: 10c0/6b44f09da090f4250f4eb3bface5f644d7ea9e3fe5ceea5af517543846c1e2486ef6117df176848fea64408415c92900bdc522ec1d1c5da2323665c1cb920b3f
+  languageName: node
+  linkType: hard
+
+"@effect/printer@npm:^0.47.0":
+  version: 0.47.0
+  resolution: "@effect/printer@npm:0.47.0"
+  peerDependencies:
+    "@effect/typeclass": ^0.38.0
+    effect: ^3.19.0
+  checksum: 10c0/279f70dc709d88dd339c66e603f1263e0e560cbd96351a19b5368edb082e95d948c4dfea3d97d97d51215bc2b2254772e5cde8801ae05fe498a4bc0601d1a996
+  languageName: node
+  linkType: hard
+
 "@effect/rpc@npm:^0.73.0":
   version: 0.73.0
   resolution: "@effect/rpc@npm:0.73.0"
@@ -681,6 +730,15 @@ __metadata:
     "@effect/platform": ^0.94.0
     effect: ^3.19.13
   checksum: 10c0/ba3d283c157a700cdfc4eb01a81fcebb2f4d8c355a80f7d20339f46d4f75bf3930467c2da5da81970da7c0a2766adc82df34c7888c67a63583b6af5c567b950c
+  languageName: node
+  linkType: hard
+
+"@effect/typeclass@npm:^0.38.0":
+  version: 0.38.0
+  resolution: "@effect/typeclass@npm:0.38.0"
+  peerDependencies:
+    effect: ^3.19.0
+  checksum: 10c0/35cf6af14000f7953f19a6f368228f704011642f83f4559e4666ac30b1a3fdab8022fade2de70df948eee60c2e61b38e15c00d0f169990c2e9e1e4bf789503ac
   languageName: node
   linkType: hard
 
@@ -3182,6 +3240,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ini@npm:^4.1.3":
+  version: 4.1.3
+  resolution: "ini@npm:4.1.3"
+  checksum: 10c0/0d27eff094d5f3899dd7c00d0c04ea733ca03a8eb6f9406ce15daac1a81de022cb417d6eaff7e4342451ffa663389c565ffc68d6825eaf686bf003280b945764
+  languageName: node
+  linkType: hard
+
 "inquirer@npm:^8.2.4":
   version: 8.2.7
   resolution: "inquirer@npm:8.2.7"
@@ -4752,6 +4817,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"toml@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "toml@npm:3.0.0"
+  checksum: 10c0/8d7ed3e700ca602e5419fca343e1c595eb7aa177745141f0761a5b20874b58ee5c878cd045c408da9d130cb2b611c639912210ba96ce2f78e443569aa8060c18
+  languageName: node
+  linkType: hard
+
 "tough-cookie@npm:^5.1.1":
   version: 5.1.2
   resolution: "tough-cookie@npm:5.1.2"
@@ -5080,6 +5152,15 @@ __metadata:
   version: 5.0.0
   resolution: "yallist@npm:5.0.0"
   checksum: 10c0/a499c81ce6d4a1d260d4ea0f6d49ab4da09681e32c3f0472dee16667ed69d01dae63a3b81745a24bd78476ec4fcf856114cb4896ace738e01da34b2c42235416
+  languageName: node
+  linkType: hard
+
+"yaml@npm:^2.5.0":
+  version: 2.8.2
+  resolution: "yaml@npm:2.8.2"
+  bin:
+    yaml: bin.mjs
+  checksum: 10c0/703e4dc1e34b324aa66876d63618dcacb9ed49f7e7fe9b70f1e703645be8d640f68ab84f12b86df8ac960bac37acf5513e115de7c970940617ce0343c8c9cd96
   languageName: node
   linkType: hard
 
