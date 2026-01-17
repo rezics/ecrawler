@@ -1,4 +1,4 @@
-import {ServerConfig} from "@ecrawler/core/server/config.js"
+import {ServerConfig} from "@ecrawler/core/server/config.ts"
 import {defineConfig} from "drizzle-kit"
 import {Effect, Redacted} from "effect"
 import {loadEnvFile} from "node:process"

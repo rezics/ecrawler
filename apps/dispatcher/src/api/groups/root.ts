@@ -4,7 +4,7 @@ import {HttpApiBuilder} from "@effect/platform"
 import {Array, Effect, Layer, Schedule, Duration, pipe, Option} from "effect"
 import * as schema from "../../database/schema.ts"
 import {and, arrayContained, eq, gte, lt, SQL, asc, isNull} from "drizzle-orm"
-import {UnknownError} from "@ecrawler/core/api/error.js"
+import {UnknownError} from "@ecrawler/core/api/error.ts"
 import {Database} from "../../database/client.ts"
 
 export default Layer.unwrapEffect(

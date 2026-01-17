@@ -2,7 +2,7 @@
 	"name": "@ecrawler/cli",
 	"version": "0.0.1",
 	"scripts": {
-		"start": "tsx ./src/main.ts"
+		"start": "yarn run -T tsx ./src/main.ts"
 	},
 	"dependencies": {
 		"@effect/cli": "^0.73.0",

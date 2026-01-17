@@ -1,0 +1,6 @@
+FROM node:24-alpine
+WORKDIR /app
+COPY dist/main.mjs .
+COPY src src
+ENV NODE_ENV=production
+ENTRYPOINT [ "node", "main.mjs" ]

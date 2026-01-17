@@ -1,7 +1,7 @@
 import {Task} from "@ecrawler/schemas/task"
 import {HttpApiEndpoint, HttpApiGroup, OpenApi} from "@effect/platform"
 import {Schema} from "effect"
-import {UnknownError} from "@ecrawler/core/api/error.js"
+import {UnknownError} from "@ecrawler/core/api/error.ts"
 
 export class TaskNotFoundError extends Schema.TaggedError<TaskNotFoundError>()("TaskNotFoundError", {}) {}
 

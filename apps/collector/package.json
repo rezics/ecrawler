@@ -1,12 +1,16 @@
 {
 	"name": "@ecrawler/collector",
+	"version": "0.0.1",
 	"type": "module",
 	"private": true,
 	"scripts": {
-		"start": "tsx --env-file=.env.production ./src/main.ts",
-		"dev": "tsx --env-file=.env.development ./src/main.ts",
+		"start": "yarn workspace @ecrawler/collector run -T tsx --env-file-if-exists=.env.production ./src/main.ts",
+		"dev": "yarn workspace @ecrawler/collector run -T tsx --env-file-if-exists=.env.development ./src/main.ts",
 		"generate": "cd ./src/database && drizzle-kit generate",
-		"migrate": "cd ./src/database && drizzle-kit migrate"
+		"migrate": "cd ./src/database && drizzle-kit migrate",
+		"build:bundle": "yarn run -T esbuild ./src/main.ts --bundle --keep-names --minify --platform=node --target=node24 --format=esm --outfile=./dist/main.mjs --banner:js='import { createRequire } from \"node:module\"; const require = createRequire(import.meta.url);'",
+		"build:podman": "podman build . -t ecrawler:collector --network=host --format=oci --output=type=tar,dest=./dist/podman.tar",
+		"build": "yarn run build:bundle && yarn run build:podman"
 	},
 	"dependencies": {
 		"@ecrawler/api": "workspace:*",
