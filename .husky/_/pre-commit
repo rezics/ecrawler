@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+yarn format
+yarn readme
+
+git add README

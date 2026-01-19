@@ -9,8 +9,10 @@
 		"./e2e"
 	],
 	"scripts": {
+		"prepare": "husky",
 		"readme": "tsx ./tools/readme/main.ts",
-		"update": "tsx ./tools/update/main.ts"
+		"update": "tsx ./tools/update/main.ts",
+		"format": "prettier --write ."
 	},
 	"dependencies": {
 		"@effect/cluster": "^0.56.1",
@@ -27,6 +29,7 @@
 		"drizzle-orm": "^0.45.1",
 		"effect": "^3.19.14",
 		"esbuild": "^0.27.2",
+		"husky": "^9.1.7",
 		"uuid": "^13.0.0",
 		"zx": "^8.8.5"
 	},

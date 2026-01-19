@@ -12,6 +12,13 @@ await fs.rm("README", {force: true})
 
 const readme = []
 
-readme.push(`Effective`, `Crawler @ ${pkg.version}`, "", await $`tree --gitignore --dirsfirst  --prune --du -h`)
+readme.push(
+	`Effective`,
+	`Crawler @ ${pkg.version}`,
+	"",
+	await $`tree --gitignore --dirsfirst --prune --du -h`,
+	"",
+	`🄯 ${new Date().getFullYear()} NMNM.CC, REZICS`
+)
 
 await fs.writeFile("README", readme.join("\n"), "utf-8")
