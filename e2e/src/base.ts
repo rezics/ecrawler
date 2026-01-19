@@ -7,7 +7,7 @@ const title = (text: string) => console.log(`\n\n${"-".repeat(7)} ${text} ${"-".
 
 const TaskInput = Task.pick("tags", "link")
 
-export const test = async (tasks: (typeof TaskInput.Type)[], workers: string[]) => {
+export const test = async (tasks: (typeof TaskInput.Type)[], extractors: string[]) => {
 	syncProcessCwd()
 
 	const root = $.env["PROJECT_CWD"]
@@ -115,7 +115,7 @@ export const test = async (tasks: (typeof TaskInput.Type)[], workers: string[]) 
 		$.env["DISPATCHER_TOKEN"] = DISPATCHER_TOKEN
 		$.env["COLLECTOR_BASE_URL"] = `http://${COLLECTOR_HOST}:${COLLECTOR_PORT}`
 		$.env["COLLECTOR_TOKEN"] = COLLECTOR_TOKEN
-		$.env["WORKERS"] = workers.join(",")
+		$.env["EXTRACTORS"] = extractors.join(",")
 		const task = $`yarn run -T tsx ./src/main.ts`
 		task.pipe(stdout)
 

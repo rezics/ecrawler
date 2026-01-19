@@ -18,7 +18,7 @@ const init = (worker: Extractor) =>
 const program = Effect.gen(function* () {
 	const config = yield* WorkerConfig
 	const [errors, workers] = yield* pipe(
-		config.workers,
+		config.extractors,
 		Effect.partition(path => Effect.tryPromise(() => import(path)).pipe(Effect.mapError(() => path)), {
 			concurrency: "unbounded"
 		}),

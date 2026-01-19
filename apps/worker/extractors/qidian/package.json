@@ -1,5 +1,5 @@
 {
-	"name": "@ecrawler/worker-qidian",
+	"name": "@ecrawler/extractor-qidian",
 	"type": "module",
 	"private": true,
 	"exports": {

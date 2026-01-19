@@ -8,5 +8,5 @@ export const WorkerConfig = Config.all({
 	timeout: Config.duration("TIMEOUT").pipe(Config.withDefault(Duration.minutes(1))),
 	capacity: Config.number("CAPACITY").pipe(Config.withDefault(Infinity)),
 	idleTimeout: Config.duration("IDLE_TIMEOUT").pipe(Config.withDefault(Duration.minutes(5))),
-	workers: Config.array(Config.string(), "WORKERS")
+	extractors: Config.array(Config.string(), "EXTRACTORS")
 }).pipe(Config.unwrap)

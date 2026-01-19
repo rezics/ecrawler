@@ -1,4 +1,4 @@
-import {Array, Chunk, Effect, Option, pipe, Predicate, Queue, Schema} from "effect"
+import {Array, Chunk, Effect, Option, pipe, Predicate, Queue} from "effect"
 import type {LinkExtractor} from "@ecrawler/worker/interfaces.ts"
 import {CheerioCrawler} from "crawlee"
 

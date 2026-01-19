@@ -494,6 +494,38 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@ecrawler/extractor-bqgl-cc@workspace:^, @ecrawler/extractor-bqgl-cc@workspace:apps/worker/extractors/bqgl-cc":
+  version: 0.0.0-use.local
+  resolution: "@ecrawler/extractor-bqgl-cc@workspace:apps/worker/extractors/bqgl-cc"
+  dependencies:
+    "@ecrawler/schemas": "workspace:*"
+    "@ecrawler/worker": "workspace:*"
+    crawlee: "npm:^3.15.3"
+    playwright: "npm:^1.57.0"
+  languageName: unknown
+  linkType: soft
+
+"@ecrawler/extractor-dummy@workspace:^, @ecrawler/extractor-dummy@workspace:apps/worker/extractors/dummy":
+  version: 0.0.0-use.local
+  resolution: "@ecrawler/extractor-dummy@workspace:apps/worker/extractors/dummy"
+  dependencies:
+    "@ecrawler/schemas": "workspace:*"
+    "@ecrawler/worker": "workspace:*"
+    "@faker-js/faker": "npm:^10.2.0"
+  languageName: unknown
+  linkType: soft
+
+"@ecrawler/extractor-qidian@workspace:^, @ecrawler/extractor-qidian@workspace:apps/worker/extractors/qidian":
+  version: 0.0.0-use.local
+  resolution: "@ecrawler/extractor-qidian@workspace:apps/worker/extractors/qidian"
+  dependencies:
+    "@ecrawler/schemas": "workspace:*"
+    "@ecrawler/worker": "workspace:*"
+    crawlee: "npm:^3.15.3"
+    playwright: "npm:^1.57.0"
+  languageName: unknown
+  linkType: soft
+
 "@ecrawler/proxy@workspace:libs/proxy":
   version: 0.0.0-use.local
   resolution: "@ecrawler/proxy@workspace:libs/proxy"
@@ -524,47 +556,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ecrawler/worker-bqgl-cc@workspace:^, @ecrawler/worker-bqgl-cc@workspace:apps/worker/implementations/bqgl-cc":
-  version: 0.0.0-use.local
-  resolution: "@ecrawler/worker-bqgl-cc@workspace:apps/worker/implementations/bqgl-cc"
-  dependencies:
-    "@ecrawler/schemas": "workspace:*"
-    "@ecrawler/worker": "workspace:*"
-    crawlee: "npm:^3.15.3"
-    playwright: "npm:^1.57.0"
-  languageName: unknown
-  linkType: soft
-
-"@ecrawler/worker-dummy@workspace:^, @ecrawler/worker-dummy@workspace:apps/worker/implementations/dummy":
-  version: 0.0.0-use.local
-  resolution: "@ecrawler/worker-dummy@workspace:apps/worker/implementations/dummy"
-  dependencies:
-    "@ecrawler/schemas": "workspace:*"
-    "@ecrawler/worker": "workspace:*"
-    "@faker-js/faker": "npm:^10.2.0"
-  languageName: unknown
-  linkType: soft
-
-"@ecrawler/worker-qidian@workspace:^, @ecrawler/worker-qidian@workspace:apps/worker/implementations/qidian":
-  version: 0.0.0-use.local
-  resolution: "@ecrawler/worker-qidian@workspace:apps/worker/implementations/qidian"
-  dependencies:
-    "@ecrawler/schemas": "workspace:*"
-    "@ecrawler/worker": "workspace:*"
-    crawlee: "npm:^3.15.3"
-    playwright: "npm:^1.57.0"
-  languageName: unknown
-  linkType: soft
-
 "@ecrawler/worker@workspace:*, @ecrawler/worker@workspace:apps/worker":
   version: 0.0.0-use.local
   resolution: "@ecrawler/worker@workspace:apps/worker"
   dependencies:
     "@ecrawler/api": "workspace:*"
+    "@ecrawler/extractor-bqgl-cc": "workspace:^"
+    "@ecrawler/extractor-dummy": "workspace:^"
+    "@ecrawler/extractor-qidian": "workspace:^"
     "@ecrawler/schemas": "workspace:*"
-    "@ecrawler/worker-bqgl-cc": "workspace:^"
-    "@ecrawler/worker-dummy": "workspace:^"
-    "@ecrawler/worker-qidian": "workspace:^"
   languageName: unknown
   linkType: soft
 

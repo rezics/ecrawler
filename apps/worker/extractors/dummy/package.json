@@ -1,5 +1,5 @@
 {
-	"name": "@ecrawler/worker-dummy",
+	"name": "@ecrawler/extractor-dummy",
 	"type": "module",
 	"private": true,
 	"exports": {

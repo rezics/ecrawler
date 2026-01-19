@@ -14,12 +14,12 @@
 	},
 	"dependencies": {
 		"@ecrawler/api": "workspace:*",
-		"@ecrawler/schemas": "workspace:*",
-		"@ecrawler/worker-bqgl-cc": "workspace:^",
-		"@ecrawler/worker-dummy": "workspace:^",
-		"@ecrawler/worker-qidian": "workspace:^"
+		"@ecrawler/extractor-bqgl-cc": "workspace:^",
+		"@ecrawler/extractor-dummy": "workspace:^",
+		"@ecrawler/extractor-qidian": "workspace:^",
+		"@ecrawler/schemas": "workspace:*"
 	},
 	"workspaces": [
-		"./implementations/*"
+		"./extractors/*"
 	]
 }
