@@ -494,6 +494,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@ecrawler/e2e@workspace:e2e":
+  version: 0.0.0-use.local
+  resolution: "@ecrawler/e2e@workspace:e2e"
+  dependencies:
+    "@ecrawler/api": "workspace:*"
+    "@ecrawler/schemas": "workspace:*"
+    "@effect/platform": "npm:^0.94.1"
+    "@effect/platform-node": "npm:^0.104.0"
+    "@effect/vitest": "npm:^0.27.0"
+    "@types/node": "npm:^25.0.3"
+    effect: "npm:^3.19.14"
+    tree-kill: "npm:^1.2.2"
+    typescript: "npm:^5.9.3"
+    uuid: "npm:^13.0.0"
+    vitest: "npm:^4.0.17"
+  languageName: unknown
+  linkType: soft
+
 "@ecrawler/extractor-bqgl-cc@workspace:^, @ecrawler/extractor-bqgl-cc@workspace:apps/worker/extractors/bqgl-cc":
   version: 0.0.0-use.local
   resolution: "@ecrawler/extractor-bqgl-cc@workspace:apps/worker/extractors/bqgl-cc"
@@ -535,24 +553,6 @@ __metadata:
 "@ecrawler/schemas@workspace:*, @ecrawler/schemas@workspace:libs/schemas":
   version: 0.0.0-use.local
   resolution: "@ecrawler/schemas@workspace:libs/schemas"
-  languageName: unknown
-  linkType: soft
-
-"@ecrawler/testing@workspace:e2e":
-  version: 0.0.0-use.local
-  resolution: "@ecrawler/testing@workspace:e2e"
-  dependencies:
-    "@ecrawler/api": "workspace:*"
-    "@ecrawler/schemas": "workspace:*"
-    "@effect/platform": "npm:^0.94.1"
-    "@effect/platform-node": "npm:^0.104.0"
-    "@effect/vitest": "npm:^0.27.0"
-    "@types/node": "npm:^25.0.3"
-    effect: "npm:^3.19.14"
-    tree-kill: "npm:^1.2.2"
-    typescript: "npm:^5.9.3"
-    uuid: "npm:^13.0.0"
-    vitest: "npm:^4.0.17"
   languageName: unknown
   linkType: soft
 
