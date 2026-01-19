@@ -8,8 +8,10 @@ if (!root) {
 }
 cd(root)
 
+await fs.rm("README", {force: true})
+
 const readme = []
 
-readme.push(`Effective`, `Crawler @ ${pkg.version}`, "", await $`tree --gitignore --prune --du -h`)
+readme.push(`Effective`, `Crawler @ ${pkg.version}`, "", await $`tree --gitignore --dirsfirst  --prune --du -h`)
 
-await fs.writeFile("README", readme.join("\n"))
+await fs.writeFile("README", readme.join("\n"), "utf-8")
