@@ -3,7 +3,8 @@
 	"packageManager": "yarn@4.12.0",
 	"workspaces": [
 		"./apps/*",
-		"./libs/*"
+		"./libs/*",
+		"./e2e"
 	],
 	"dependencies": {
 		"@effect/cluster": "^0.56.1",

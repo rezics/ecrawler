@@ -3,7 +3,7 @@ import {TaskNotFoundError} from "@ecrawler/api/dispatcher/groups/root.ts"
 import {HttpApiBuilder} from "@effect/platform"
 import {Array, Effect, Layer, Schedule, Duration, pipe, Option} from "effect"
 import * as schema from "../../database/schema.ts"
-import {and, arrayContained, eq, gte, lt, SQL, asc, isNull} from "drizzle-orm"
+import {and, arrayContains, eq, gte, lt, SQL, asc, isNull} from "drizzle-orm"
 import {UnknownError} from "@ecrawler/core/api/error.ts"
 import {Database} from "../../database/client.ts"
 
@@ -18,10 +18,11 @@ export default Layer.unwrapEffect(
 						Effect.tryPromise(() =>
 							drizzle
 								.insert(schema.tasks)
-								.values({tags: Array.fromIterable(payload.tags), link: payload.link})
+								.values({tags: Array.dedupe(payload.tags), link: payload.link})
+								.onConflictDoNothing()
 								.returning({id: schema.tasks.id})
 						),
-						Effect.flatMap(Array.head),
+						Effect.map(Array.head),
 						UnknownError.mapError
 					)
 				)
@@ -44,10 +45,7 @@ export default Layer.unwrapEffect(
 						Effect.tryPromise(() =>
 							drizzle
 								.update(schema.tasks)
-								.set({
-									tags: payload.tags ? Array.fromIterable(payload.tags) : undefined,
-									link: payload.link
-								})
+								.set({tags: payload.tags ? Array.dedupe(payload.tags) : undefined, link: payload.link})
 								.where(eq(schema.tasks.id, path.id))
 								.returning()
 						),
@@ -68,7 +66,7 @@ export default Layer.unwrapEffect(
 											urlParams.id && eq(schema.tasks.id, urlParams.id),
 											urlParams.by && eq(schema.tasks.by, urlParams.by),
 											urlParams.tags &&
-												arrayContained(schema.tasks.tags, Array.fromIterable(urlParams.tags)),
+												arrayContains(schema.tasks.tags, Array.fromIterable(urlParams.tags)),
 											urlParams.since && gte(schema.tasks.created_at, urlParams.since),
 											urlParams.before && lt(schema.tasks.created_at, urlParams.before)
 										].filter(v => v instanceof SQL)
@@ -94,7 +92,7 @@ export default Layer.unwrapEffect(
 											...[
 												urlParams.id && eq(schema.tasks.id, urlParams.id),
 												urlParams.tags &&
-													arrayContained(
+													arrayContains(
 														schema.tasks.tags,
 														Array.fromIterable(urlParams.tags)
 													),
@@ -123,7 +121,10 @@ export default Layer.unwrapEffect(
 						Effect.flatMap(Option.fromNullable),
 						Effect.catchTag("NoSuchElementException", () => Effect.fail(new TaskNotFoundError())),
 						Effect.retry(Schedule.spaced("1 seconds")),
-						Effect.timeout(Duration.seconds(urlParams.timeout ?? 30)),
+						Effect.timeoutFail({
+							duration: Duration.seconds(urlParams.timeout ?? 30),
+							onTimeout: () => new TaskNotFoundError()
+						}),
 						UnknownError.mapError
 					)
 				)

@@ -1,0 +1,13 @@
+# for local development only
+
+name: ecrawler-database
+services:
+  postgres:
+    image: "postgres:18"
+    userns_mode: "keep-id:uid=999,gid=999"
+    ports:
+      - "127.0.0.1:25432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./data:/var/lib/postgresql

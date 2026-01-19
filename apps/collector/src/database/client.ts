@@ -1,5 +1,5 @@
 import * as schema from "./schema.ts"
-import {Effect, Redacted} from "effect"
+import {Effect, Redacted, Schedule} from "effect"
 import {ServerConfig} from "@ecrawler/core/server/config.ts"
 import {drizzle} from "drizzle-orm/postgres-js"
 import {migrate} from "drizzle-orm/postgres-js/migrator"
@@ -14,5 +14,5 @@ export class Database extends Effect.Service<Database>()("@ecrawler/collector/da
 			migrate(db, {migrationsFolder: path.join(process.cwd(), "src", "database", "migrations")})
 		).pipe(Effect.orDie)
 		return db
-	})
+	}).pipe(Effect.retry({schedule: Schedule.spaced("1 seconds"), times: 3}))
 }) {}

@@ -4,7 +4,7 @@ import {UnknownError} from "./error"
 
 const Api = HttpApi.make("util")
 	.add(
-		HttpApiGroup.make("system").add(
+		HttpApiGroup.make("system", {topLevel: true}).add(
 			HttpApiEndpoint.head("health")`/health`
 				.addSuccess(Schema.Void)
 				.annotate(OpenApi.Summary, "Check health status")

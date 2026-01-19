@@ -22,7 +22,11 @@ export default {
 						requestHandler: async ({page, request}) =>
 							pipe(
 								{
-									cover: () => page.locator(`[id="book-detail"] [id="bookImg"] img`).first().getAttribute("src"),
+									cover: () =>
+										page
+											.locator(`[id="book-detail"] [id="bookImg"] img`)
+											.first()
+											.getAttribute("src"),
 									title: () => page.locator("#bookName").first().textContent(),
 									author: () => page.locator(".writer-name").first().textContent(),
 									subjects: () => page.locator("p.book-attribute").first().textContent(),

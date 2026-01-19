@@ -2,6 +2,7 @@ import {Task} from "@ecrawler/schemas/task"
 import {HttpApiEndpoint, HttpApiGroup, OpenApi} from "@effect/platform"
 import {Schema} from "effect"
 import {UnknownError} from "@ecrawler/core/api/error.ts"
+import {Auth} from "@ecrawler/core/api/auth.ts"
 
 export class TaskNotFoundError extends Schema.TaggedError<TaskNotFoundError>()("TaskNotFoundError", {}) {}
 
@@ -64,6 +65,7 @@ export const NextQueryParams = QueryParams.pipe(
 )
 
 export default HttpApiGroup.make("dispatcher")
+	.middleware(Auth)
 	.annotate(
 		OpenApi.Description,
 		"Operations related to task dispatching and queue management\n\n与任务调度和队列管理相关的操作"
@@ -72,9 +74,12 @@ export default HttpApiGroup.make("dispatcher")
 	.add(
 		HttpApiEndpoint.post("createTask")`/tasks`
 			.setPayload(CreatePayload)
-			.addSuccess(Schema.Struct({id: Schema.UUID}))
+			.addSuccess(Schema.OptionFromNullOr(Schema.Struct({id: Schema.UUID})))
 			.annotate(OpenApi.Summary, "Create a new task")
-			.annotate(OpenApi.Description, "Adds a new crawl task to the dispatcher\n\n向调度器添加新的抓取任务")
+			.annotate(
+				OpenApi.Description,
+				"Adds a new crawl task to the dispatcher. Returns the task ID if created, or null if the task already exists (same tags + link combination).\n\n向调度器添加新的抓取任务。如果创建成功返回任务 ID，如果任务已存在（相同的标签 + 链接组合）则返回 null。"
+			)
 	)
 	.add(
 		HttpApiEndpoint.get("getTasks")`/tasks`
