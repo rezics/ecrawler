@@ -524,9 +524,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ecrawler/worker-bqgl@workspace:^, @ecrawler/worker-bqgl@workspace:apps/worker/implementations/bqgl":
+"@ecrawler/worker-bqgl-cc@workspace:^, @ecrawler/worker-bqgl-cc@workspace:apps/worker/implementations/bqgl-cc":
   version: 0.0.0-use.local
-  resolution: "@ecrawler/worker-bqgl@workspace:apps/worker/implementations/bqgl"
+  resolution: "@ecrawler/worker-bqgl-cc@workspace:apps/worker/implementations/bqgl-cc"
   dependencies:
     "@ecrawler/schemas": "workspace:*"
     "@ecrawler/worker": "workspace:*"
@@ -562,7 +562,7 @@ __metadata:
   dependencies:
     "@ecrawler/api": "workspace:*"
     "@ecrawler/schemas": "workspace:*"
-    "@ecrawler/worker-bqgl": "workspace:^"
+    "@ecrawler/worker-bqgl-cc": "workspace:^"
     "@ecrawler/worker-dummy": "workspace:^"
     "@ecrawler/worker-qidian": "workspace:^"
   languageName: unknown

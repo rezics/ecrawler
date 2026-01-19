@@ -15,7 +15,7 @@
 	"dependencies": {
 		"@ecrawler/api": "workspace:*",
 		"@ecrawler/schemas": "workspace:*",
-		"@ecrawler/worker-bqgl": "workspace:^",
+		"@ecrawler/worker-bqgl-cc": "workspace:^",
 		"@ecrawler/worker-dummy": "workspace:^",
 		"@ecrawler/worker-qidian": "workspace:^"
 	},

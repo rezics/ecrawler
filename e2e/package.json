@@ -3,9 +3,6 @@
 	"version": "0.0.1",
 	"type": "module",
 	"private": true,
-	"scripts": {
-		"start": "yarn run -T tsx ./src/main.ts"
-	},
 	"dependencies": {
 		"@ecrawler/api": "workspace:*",
 		"@ecrawler/schemas": "workspace:*",

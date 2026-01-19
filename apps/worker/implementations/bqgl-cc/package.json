@@ -1,5 +1,5 @@
 {
-	"name": "@ecrawler/worker-bqgl",
+	"name": "@ecrawler/worker-bqgl-cc",
 	"type": "module",
 	"private": true,
 	"exports": {

@@ -7,9 +7,5 @@ export default {
 	name: "qidian.com",
 	tags: ["qidian.com"],
 	role: "link",
-	init: Effect.scoped(
-		Effect.gen(function* () {
-			return task => Effect.gen(function* () {})
-		})
-	)
+	init: () => Effect.succeed(_task => Effect.succeed([]))
 } as const satisfies LinkExtractor

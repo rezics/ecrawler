@@ -5,23 +5,26 @@ import type {LinkExtractor} from "../interfaces.ts"
 
 export const initLink = (worker: LinkExtractor) =>
 	Effect.gen(function* () {
-		const processor = yield* worker.init
+		const config = yield* WorkerConfig
+		const init = yield* Effect.cachedWithTTL(worker.init(), config.idleTimeout)
 
-		// @effect-diagnostics-next-line returnEffectInGen:off
-		return Effect.gen(function* () {
-			const config = yield* WorkerConfig
-			const {dispatcher} = yield* DispatcherClient
+		return () =>
+			Effect.gen(function* () {
+				const {dispatcher} = yield* DispatcherClient
 
-			const tags = Array.append(worker.tags, "link")
-			const task = yield* dispatcher.nextTask({payload: {by: config.id}, urlParams: {tags, timeout: 30}})
+				const tags = Array.append(worker.tags, "link")
+				const task = yield* dispatcher.nextTask({payload: {by: config.id}, urlParams: {tags, timeout: 30}})
 
-			yield* pipe(
-				yield* processor(task),
-				Array.map(result =>
-					dispatcher.createTask({payload: {link: result, tags: Array.append(task.tags, "data")}})
-				),
-				Effect.allWith({concurrency: "unbounded"}),
-				Effect.asVoid
-			)
-		})
+				yield* pipe(
+					init,
+					Effect.flatMap(processor => processor(task)),
+					Effect.map(
+						Array.map(result =>
+							dispatcher.createTask({payload: {link: result, tags: Array.append(task.tags, "data")}})
+						)
+					),
+					Effect.flatMap(Effect.allWith({concurrency: "unbounded"})),
+					Effect.asVoid
+				)
+			})
 	})

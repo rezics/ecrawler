@@ -68,7 +68,7 @@ const program = Effect.gen(function* () {
 
 	return yield* Stream.runForEach(stream, task =>
 		gate.withPermits(1)(
-			task.pipe(
+			task().pipe(
 				Effect.asVoid,
 				Effect.either,
 				Effect.timed,
@@ -109,4 +109,4 @@ const MainLive = Layer.mergeAll(DispatcherClient.Default, CollectorClient.Defaul
 	Layer.provide(NodeHttpClient.layer)
 )
 
-program.pipe(Effect.provide(MainLive), NodeRuntime.runMain)
+program.pipe(Effect.scoped, Effect.provide(MainLive), NodeRuntime.runMain)

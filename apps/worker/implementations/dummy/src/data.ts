@@ -10,11 +10,12 @@ export default {
 	name: "dummy",
 	tags: ["dummy"],
 	role: "data",
-	init: Effect.succeed(task =>
-		Effect.gen(function* () {
-			yield* Effect.log(`[dummy/data] Processing task: ${task.link}`)
-			yield* Effect.sleep(Duration.millis(yield* Random.nextIntBetween(200, 500)))
-			return [{source: "dummy", link: task.link, extractedAt: new Date().toISOString()}]
-		})
-	)
+	init: () =>
+		Effect.succeed(task =>
+			Effect.gen(function* () {
+				yield* Effect.log(`[dummy/data] Processing task: ${task.link}`)
+				yield* Effect.sleep(Duration.millis(yield* Random.nextIntBetween(200, 500)))
+				return [{source: "dummy", link: task.link, extractedAt: new Date().toISOString()}]
+			})
+		)
 } as const satisfies DataExtractor
