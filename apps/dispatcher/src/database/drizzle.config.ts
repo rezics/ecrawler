@@ -8,8 +8,8 @@ loadEnvFile("../../.env.development")
 const config = ServerConfig.pipe(Effect.runSync)
 
 export default defineConfig({
-	dbCredentials: {url: Redacted.value(config.database.url)},
-	dialect: "postgresql",
-	schema: "./schema.ts",
-	out: "./migrations"
+  dbCredentials: {url: Redacted.value(config.database.url)},
+  dialect: "postgresql",
+  schema: "./schema.ts",
+  out: "./migrations"
 })

@@ -1,13 +1,13 @@
 {
-	"name": "@ecrawler/extractor-dummy",
-	"type": "module",
-	"private": true,
-	"exports": {
-		"./*": "./src/*"
-	},
-	"dependencies": {
-		"@ecrawler/schemas": "workspace:*",
-		"@ecrawler/worker": "workspace:*",
-		"@faker-js/faker": "^10.2.0"
-	}
+  "name": "@ecrawler/extractor-dummy",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./*": "./src/*"
+  },
+  "dependencies": {
+    "@ecrawler/schemas": "workspace:*",
+    "@ecrawler/worker": "workspace:*",
+    "@faker-js/faker": "^10.2.0"
+  }
 }

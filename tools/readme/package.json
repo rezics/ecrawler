@@ -1,9 +1,9 @@
 {
-	"name": "@ecrawler/tool-readme",
-	"version": "0.1.0",
-	"type": "module",
-	"scripts": {
-		"start": "yarn run -T tsx ./main.ts"
-	},
-	"dependencies": {}
+  "name": "@ecrawler/tool-readme",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "yarn run -T tsx ./main.ts"
+  },
+  "dependencies": {}
 }

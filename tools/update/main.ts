@@ -6,33 +6,33 @@ type Version = `${number}.${number}.${number}`
 
 const update = String(process.argv[2] as Update | undefined).toLowerCase()
 if (!update) {
-	throw new Error("Update type is required")
+  throw new Error("Update type is required")
 }
 const current = pkg.version as Version
 const [major, minor, patch] = current.split(".").map(Number)
 if (
-	major === undefined ||
-	minor === undefined ||
-	patch === undefined ||
-	Number.isNaN(major) ||
-	Number.isNaN(minor) ||
-	Number.isNaN(patch)
+  major === undefined ||
+  minor === undefined ||
+  patch === undefined ||
+  Number.isNaN(major) ||
+  Number.isNaN(minor) ||
+  Number.isNaN(patch)
 ) {
-	throw new Error(`Invalid version format: ${current}`)
+  throw new Error(`Invalid version format: ${current}`)
 }
 
 let next: Version
 if (update === "major") {
-	next = `${major + 1}.0.0`
+  next = `${major + 1}.0.0`
 } else if (update === "minor") {
-	next = `${major}.${minor + 1}.0`
+  next = `${major}.${minor + 1}.0`
 } else {
-	next = `${major}.${minor}.${patch + 1}`
+  next = `${major}.${minor}.${patch + 1}`
 }
 
 const root = $.env["PROJECT_CWD"]
 if (!root) {
-	throw new Error("PROJECT_CWD is not set")
+  throw new Error("PROJECT_CWD is not set")
 }
 cd(root)
 

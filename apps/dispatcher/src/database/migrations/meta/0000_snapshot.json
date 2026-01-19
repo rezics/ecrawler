@@ -1,92 +1,70 @@
 {
-	"id": "d76423b6-4cbc-4c9b-961c-6c7c91b658af",
-	"prevId": "00000000-0000-0000-0000-000000000000",
-	"version": "7",
-	"dialect": "postgresql",
-	"tables": {
-		"public.tasks": {
-			"name": "tasks",
-			"schema": "",
-			"columns": {
-				"id": {
-					"name": "id",
-					"type": "uuid",
-					"primaryKey": true,
-					"notNull": true
-				},
-				"by": {
-					"name": "by",
-					"type": "uuid",
-					"primaryKey": false,
-					"notNull": false
-				},
-				"created_at": {
-					"name": "created_at",
-					"type": "timestamp with time zone",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "now()"
-				},
-				"updated_at": {
-					"name": "updated_at",
-					"type": "timestamp with time zone",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "now()"
-				},
-				"tags": {
-					"name": "tags",
-					"type": "text[]",
-					"primaryKey": false,
-					"notNull": true,
-					"default": "'{}'"
-				},
-				"link": {
-					"name": "link",
-					"type": "text",
-					"primaryKey": false,
-					"notNull": true
-				}
-			},
-			"indexes": {},
-			"foreignKeys": {},
-			"compositePrimaryKeys": {},
-			"uniqueConstraints": {
-				"tasks_tags_link_unique": {
-					"name": "tasks_tags_link_unique",
-					"nullsNotDistinct": false,
-					"columns": ["tags", "link"]
-				}
-			},
-			"policies": {},
-			"checkConstraints": {},
-			"isRLSEnabled": false
-		},
-		"public.token": {
-			"name": "token",
-			"schema": "",
-			"columns": {
-				"data": {
-					"name": "data",
-					"type": "text",
-					"primaryKey": true,
-					"notNull": true
-				}
-			},
-			"indexes": {},
-			"foreignKeys": {},
-			"compositePrimaryKeys": {},
-			"uniqueConstraints": {},
-			"policies": {},
-			"checkConstraints": {},
-			"isRLSEnabled": false
-		}
-	},
-	"enums": {},
-	"schemas": {},
-	"sequences": {},
-	"roles": {},
-	"policies": {},
-	"views": {},
-	"_meta": {"columns": {}, "schemas": {}, "tables": {}}
+  "id": "d76423b6-4cbc-4c9b-961c-6c7c91b658af",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.tasks": {
+      "name": "tasks",
+      "schema": "",
+      "columns": {
+        "id": {"name": "id", "type": "uuid", "primaryKey": true, "notNull": true},
+        "by": {"name": "by", "type": "uuid", "primaryKey": false, "notNull": false},
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "link": {"name": "link", "type": "text", "primaryKey": false, "notNull": true}
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "tasks_tags_link_unique": {
+          "name": "tasks_tags_link_unique",
+          "nullsNotDistinct": false,
+          "columns": ["tags", "link"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.token": {
+      "name": "token",
+      "schema": "",
+      "columns": {"data": {"name": "data", "type": "text", "primaryKey": true, "notNull": true}},
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {"columns": {}, "schemas": {}, "tables": {}}
 }

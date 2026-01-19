@@ -1,26 +1,26 @@
 {
-	"name": "@ecrawler/worker",
-	"version": "0.1.0",
-	"type": "module",
-	"private": true,
-	"scripts": {
-		"start": "yarn run -T tsx --env-file-if-exists=.env.production ./src/main.ts",
-		"dev": "yarn run -T tsx --env-file-if-exists=.env.development ./src/main.ts",
-		"build:bundle": "yarn run -T esbuild ./src/main.ts ./src/entrypoint.ts --bundle --keep-names --minify --platform=node --target=node24 --format=esm --outdir=./dist --out-extension:.js=.mjs --banner:js='import { createRequire } from \"node:module\"; const require = createRequire(import.meta.url);'",
-		"build:podman": "podman build . -t ecrawler:worker --network=host --format=oci --output=type=tar,dest=./dist/podman.tar",
-		"build": "yarn run build:bundle && yarn run build:podman"
-	},
-	"exports": {
-		"./*": "./src/*"
-	},
-	"dependencies": {
-		"@ecrawler/api": "workspace:*",
-		"@ecrawler/extractor-bqgl-cc": "workspace:^",
-		"@ecrawler/extractor-dummy": "workspace:^",
-		"@ecrawler/extractor-qidian": "workspace:^",
-		"@ecrawler/schemas": "workspace:*"
-	},
-	"workspaces": [
-		"./extractors/*"
-	]
+  "name": "@ecrawler/worker",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "yarn run -T tsx --env-file-if-exists=.env.production ./src/main.ts",
+    "dev": "yarn run -T tsx --env-file-if-exists=.env.development ./src/main.ts",
+    "build:bundle": "yarn run -T esbuild ./src/main.ts ./src/entrypoint.ts --bundle --keep-names --minify --platform=node --target=node24 --format=esm --outdir=./dist --out-extension:.js=.mjs --banner:js='import { createRequire } from \"node:module\"; const require = createRequire(import.meta.url);'",
+    "build:podman": "podman build . -t ecrawler:worker --network=host --format=oci --output=type=tar,dest=./dist/podman.tar",
+    "build": "yarn run build:bundle && yarn run build:podman"
+  },
+  "exports": {
+    "./*": "./src/*"
+  },
+  "dependencies": {
+    "@ecrawler/api": "workspace:*",
+    "@ecrawler/extractor-bqgl-cc": "workspace:^",
+    "@ecrawler/extractor-dummy": "workspace:^",
+    "@ecrawler/extractor-qidian": "workspace:^",
+    "@ecrawler/schemas": "workspace:*"
+  },
+  "workspaces": [
+    "./extractors/*"
+  ]
 }

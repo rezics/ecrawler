@@ -6,11 +6,11 @@ import {NodeRuntime} from "@effect/platform-node"
 const ApiLayer = api.pipe(Layer.provide(Database.Default))
 
 const program = Effect.gen(function* () {
-	yield* Effect.log("Starting Dispatcher Server...")
+  yield* Effect.log("Starting Dispatcher Server...")
 
-	return yield* Layer.launch(ApiLayer).pipe(
-		Effect.ensuring(Effect.log("Shutting down Dispatcher Server..."))
-	)
+  return yield* Layer.launch(ApiLayer).pipe(
+    Effect.ensuring(Effect.log("Shutting down Dispatcher Server..."))
+  )
 })
 
 NodeRuntime.runMain(program)

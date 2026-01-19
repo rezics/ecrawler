@@ -1,11 +1,4 @@
 {
-	"cSpell.words": [
-		"crawlee",
-		"ecrawler",
-		"esnext",
-		"millis",
-		"qidian",
-		"TIMESTAMPTZ"
-	],
-	"typescript.tsdk": "node_modules/typescript/lib"
+  "cSpell.words": ["crawlee", "ecrawler", "esnext", "millis", "qidian", "TIMESTAMPTZ"],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
