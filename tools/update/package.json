@@ -1,0 +1,8 @@
+{
+	"name": "@ecrawler/tool-update",
+	"version": "0.1.0",
+	"type": "module",
+	"scripts": {
+		"start": "yarn run -T tsx ./main.ts"
+	}
+}

@@ -6,12 +6,12 @@
 	"workspaces": [
 		"./apps/*",
 		"./libs/*",
-		"./e2e"
+		"./tools/*"
 	],
 	"scripts": {
 		"prepare": "husky",
-		"readme": "tsx ./tools/readme/main.ts",
-		"update": "tsx ./tools/update/main.ts",
+		"readme": "yarn workspace @ecrawler/tool-readme run start",
+		"update": "yarn workspace @ecrawler/tool-update run start",
 		"format": "prettier --write ."
 	},
 	"dependencies": {
