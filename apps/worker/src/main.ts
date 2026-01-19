@@ -1,5 +1,17 @@
 import "dotenv/config"
-import {Array, Effect, pipe, Layer, Match, Ref, Duration, Stream, Schedule, Chunk, Either} from "effect"
+import {
+	Array,
+	Effect,
+	pipe,
+	Layer,
+	Match,
+	Ref,
+	Duration,
+	Stream,
+	Schedule,
+	Chunk,
+	Either
+} from "effect"
 import CollectorClient from "./clients/collector.ts"
 import DispatcherClient from "./clients/dispatcher.ts"
 import {WorkerConfig} from "./config.ts"
@@ -19,10 +31,20 @@ const program = Effect.gen(function* () {
 	const config = yield* WorkerConfig
 	const [errors, workers] = yield* pipe(
 		config.extractors,
-		Effect.partition(path => Effect.tryPromise(() => import(path)).pipe(Effect.mapError(() => path)), {
-			concurrency: "unbounded"
-		}),
-		Effect.map(([errors, workers]) => [errors, Array.map(workers, module => module.default as Extractor)] as const)
+		Effect.partition(
+			path =>
+				Effect.tryPromise(() => import(path)).pipe(
+					Effect.mapError(() => path)
+				),
+			{concurrency: "unbounded"}
+		),
+		Effect.map(
+			([errors, workers]) =>
+				[
+					errors,
+					Array.map(workers, module => module.default as Extractor)
+				] as const
+		)
 	)
 
 	if (Array.length(errors) > 0) {
@@ -37,7 +59,11 @@ const program = Effect.gen(function* () {
 		Array.map(workers, worker => worker.name)
 	)
 
-	const processors = yield* pipe(workers, Array.map(init), Effect.allWith({concurrency: "unbounded"}))
+	const processors = yield* pipe(
+		workers,
+		Array.map(init),
+		Effect.allWith({concurrency: "unbounded"})
+	)
 
 	const window = Array.length(processors)
 	const limit = yield* Ref.make(1)
@@ -49,13 +75,21 @@ const program = Effect.gen(function* () {
 
 	const up = () =>
 		cap.pipe(
-			Effect.flatMap(max => Ref.updateAndGet(limit, n => Math.min(n + 1, max))),
+			Effect.flatMap(max =>
+				Ref.updateAndGet(limit, n => Math.min(n + 1, max))
+			),
 			Effect.tap(n => gate.resize(n))
 		)
-	const down = () => Ref.updateAndGet(limit, n => Math.max(n / 2, 1)).pipe(Effect.tap(n => gate.resize(n)))
+	const down = () =>
+		Ref.updateAndGet(limit, n => Math.max(n / 2, 1)).pipe(
+			Effect.tap(n => gate.resize(n))
+		)
 
 	const gate = yield* limit.pipe(Effect.flatMap(n => Effect.makeSemaphore(n)))
-	const stream = Stream.repeat(Stream.fromIterable(processors), Schedule.forever)
+	const stream = Stream.repeat(
+		Stream.fromIterable(processors),
+		Schedule.forever
+	)
 	const stats = yield* Ref.make(Chunk.empty<Duration.Duration>())
 
 	yield* Effect.repeat(
@@ -77,23 +111,36 @@ const program = Effect.gen(function* () {
 						if (Either.isLeft(result)) return yield* down()
 
 						yield* Ref.update(stats, s =>
-							Chunk.append(Chunk.size(s) < window ? s : Chunk.drop(s, 1), duration)
+							Chunk.append(
+								Chunk.size(s) < window ? s : Chunk.drop(s, 1),
+								duration
+							)
 						)
 
 						const samples = yield* stats
 						if (Chunk.size(samples) < window) return
 
-						const avg = yield* Duration.divide(Chunk.reduce(samples, Duration.zero, Duration.sum), window)
+						const avg = yield* Duration.divide(
+							Chunk.reduce(samples, Duration.zero, Duration.sum),
+							window
+						)
 
 						const gain = yield* alpha
 						const next = Duration.decode(
-							gain * Duration.toMillis(avg) + (1 - gain) * Duration.toMillis(yield* ema)
+							gain * Duration.toMillis(avg) +
+								(1 - gain) * Duration.toMillis(yield* ema)
 						)
 
 						yield* Ref.set(ema, next)
-						if (Duration.lessThan(next, yield* min)) yield* Ref.set(min, next)
+						if (Duration.lessThan(next, yield* min))
+							yield* Ref.set(min, next)
 
-						if (Duration.lessThan(next, Duration.times(yield* min, yield* slack))) {
+						if (
+							Duration.lessThan(
+								next,
+								Duration.times(yield* min, yield* slack)
+							)
+						) {
 							return yield* up()
 						} else {
 							return yield* down()
@@ -105,8 +152,9 @@ const program = Effect.gen(function* () {
 	)
 })
 
-const MainLive = Layer.mergeAll(DispatcherClient.Default, CollectorClient.Default).pipe(
-	Layer.provide(NodeHttpClient.layer)
-)
+const MainLive = Layer.mergeAll(
+	DispatcherClient.Default,
+	CollectorClient.Default
+).pipe(Layer.provide(NodeHttpClient.layer))
 
 program.pipe(Effect.scoped, Effect.provide(MainLive), NodeRuntime.runMain)

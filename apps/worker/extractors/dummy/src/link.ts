@@ -15,7 +15,9 @@ export default {
 		Effect.succeed(task =>
 			Effect.gen(function* () {
 				yield* Effect.log(`[dummy/link] Processing task: ${task.link}`)
-				yield* Effect.sleep(Duration.millis(yield* Random.nextIntBetween(100, 1000)))
+				yield* Effect.sleep(
+					Duration.millis(yield* Random.nextIntBetween(100, 1000))
+				)
 				return Array.makeBy(
 					yield* Random.nextIntBetween(1, 30),
 					() => `https://www.dummy.com/book/${faker.book.title()}`

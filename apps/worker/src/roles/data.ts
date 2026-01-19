@@ -7,7 +7,10 @@ import type {DataExtractor} from "../interfaces.ts"
 export const initData = (worker: DataExtractor) =>
 	Effect.gen(function* () {
 		const config = yield* WorkerConfig
-		const init = yield* Effect.cachedWithTTL(worker.init(), config.idleTimeout)
+		const init = yield* Effect.cachedWithTTL(
+			worker.init(),
+			config.idleTimeout
+		)
 
 		return () =>
 			Effect.gen(function* () {
@@ -15,7 +18,10 @@ export const initData = (worker: DataExtractor) =>
 				const {collector} = yield* CollectorClient
 
 				const tags = Array.append(worker.tags, "data")
-				const task = yield* dispatcher.nextTask({payload: {by: config.id}, urlParams: {tags, timeout: 30}})
+				const task = yield* dispatcher.nextTask({
+					payload: {by: config.id},
+					urlParams: {tags, timeout: 30}
+				})
 
 				yield* pipe(
 					init,
@@ -23,7 +29,12 @@ export const initData = (worker: DataExtractor) =>
 					Effect.map(
 						Array.map(result =>
 							collector.createResult({
-								payload: {by: config.id, tags: task.tags, link: task.link, data: result}
+								payload: {
+									by: config.id,
+									tags: task.tags,
+									link: task.link,
+									data: result
+								}
 							})
 						)
 					),

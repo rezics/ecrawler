@@ -18,7 +18,10 @@ export default Layer.unwrapEffect(
 						Effect.tryPromise(() =>
 							drizzle
 								.insert(schema.tasks)
-								.values({tags: Array.dedupe(payload.tags), link: payload.link})
+								.values({
+									tags: Array.dedupe(payload.tags),
+									link: payload.link
+								})
 								.onConflictDoNothing()
 								.returning({id: schema.tasks.id})
 						),
@@ -35,7 +38,9 @@ export default Layer.unwrapEffect(
 								.returning({id: schema.tasks.id})
 						),
 						Effect.flatMap(Array.head),
-						Effect.catchTag("NoSuchElementException", () => Effect.fail(new TaskNotFoundError())),
+						Effect.catchTag("NoSuchElementException", () =>
+							Effect.fail(new TaskNotFoundError())
+						),
 						Effect.asVoid,
 						UnknownError.mapError
 					)
@@ -45,12 +50,19 @@ export default Layer.unwrapEffect(
 						Effect.tryPromise(() =>
 							drizzle
 								.update(schema.tasks)
-								.set({tags: payload.tags ? Array.dedupe(payload.tags) : undefined, link: payload.link})
+								.set({
+									tags: payload.tags
+										? Array.dedupe(payload.tags)
+										: undefined,
+									link: payload.link
+								})
 								.where(eq(schema.tasks.id, path.id))
 								.returning()
 						),
 						Effect.flatMap(Array.head),
-						Effect.catchTag("NoSuchElementException", () => Effect.fail(new TaskNotFoundError())),
+						Effect.catchTag("NoSuchElementException", () =>
+							Effect.fail(new TaskNotFoundError())
+						),
 						UnknownError.mapError
 					)
 				)
@@ -63,12 +75,33 @@ export default Layer.unwrapEffect(
 								.where(
 									and(
 										...[
-											urlParams.id && eq(schema.tasks.id, urlParams.id),
-											urlParams.by && eq(schema.tasks.by, urlParams.by),
+											urlParams.id &&
+												eq(
+													schema.tasks.id,
+													urlParams.id
+												),
+											urlParams.by &&
+												eq(
+													schema.tasks.by,
+													urlParams.by
+												),
 											urlParams.tags &&
-												arrayContains(schema.tasks.tags, Array.fromIterable(urlParams.tags)),
-											urlParams.since && gte(schema.tasks.created_at, urlParams.since),
-											urlParams.before && lt(schema.tasks.created_at, urlParams.before)
+												arrayContains(
+													schema.tasks.tags,
+													Array.fromIterable(
+														urlParams.tags
+													)
+												),
+											urlParams.since &&
+												gte(
+													schema.tasks.created_at,
+													urlParams.since
+												),
+											urlParams.before &&
+												lt(
+													schema.tasks.created_at,
+													urlParams.before
+												)
 										].filter(v => v instanceof SQL)
 									)
 								)
@@ -90,14 +123,28 @@ export default Layer.unwrapEffect(
 										and(
 											isNull(schema.tasks.by),
 											...[
-												urlParams.id && eq(schema.tasks.id, urlParams.id),
+												urlParams.id &&
+													eq(
+														schema.tasks.id,
+														urlParams.id
+													),
 												urlParams.tags &&
 													arrayContains(
 														schema.tasks.tags,
-														Array.fromIterable(urlParams.tags)
+														Array.fromIterable(
+															urlParams.tags
+														)
 													),
-												urlParams.since && gte(schema.tasks.created_at, urlParams.since),
-												urlParams.before && lt(schema.tasks.created_at, urlParams.before)
+												urlParams.since &&
+													gte(
+														schema.tasks.created_at,
+														urlParams.since
+													),
+												urlParams.before &&
+													lt(
+														schema.tasks.created_at,
+														urlParams.before
+													)
 											].filter(v => v instanceof SQL)
 										)
 									)
@@ -119,7 +166,9 @@ export default Layer.unwrapEffect(
 							})
 						),
 						Effect.flatMap(Option.fromNullable),
-						Effect.catchTag("NoSuchElementException", () => Effect.fail(new TaskNotFoundError())),
+						Effect.catchTag("NoSuchElementException", () =>
+							Effect.fail(new TaskNotFoundError())
+						),
 						Effect.retry(Schedule.spaced("1 seconds")),
 						Effect.timeoutFail({
 							duration: Duration.seconds(urlParams.timeout ?? 30),

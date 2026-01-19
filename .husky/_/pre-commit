@@ -3,4 +3,4 @@
 yarn format
 yarn readme
 
-git add README
+git add .

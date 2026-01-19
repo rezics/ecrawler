@@ -22,26 +22,42 @@ export default {
 						new CheerioCrawler({
 							requestHandler: async ({$, request}) =>
 								Effect.gen(function* () {
-									const dirid = yield* Option.fromNullable(request.url.match(/look\/(\d+)/)?.[1])
+									const dirid = yield* Option.fromNullable(
+										request.url.match(/look\/(\d+)/)?.[1]
+									)
 
-									const coverHref = $("body > div.book > div.info > div.cover > img").attr()?.["href"]
-									const title = $("body > div.book > div.info > h1").text()
+									const coverHref = $(
+										"body > div.book > div.info > div.cover > img"
+									).attr()?.["href"]
+									const title = $(
+										"body > div.book > div.info > h1"
+									).text()
 									const author = $(
 										"body > div.book > div.info > div.small > span:nth-child(1)"
 									).text()
-									const description = $("body > div.book > div.info > div.intro > dl > dd").text()
+									const description = $(
+										"body > div.book > div.info > div.intro > dl > dd"
+									).text()
 									const ongoing = $(
 										"body > div.book > div.info > div.small > span:nth-child(2)"
 									).text()
 
 									const book: Book = {
 										cover: coverHref,
-										title: isNonEmpty(title) ? title : undefined,
-										authors: isNonEmpty(author) ? [author] : undefined,
-										description: isNonEmpty(description) ? description : undefined,
+										title: isNonEmpty(title)
+											? title
+											: undefined,
+										authors: isNonEmpty(author)
+											? [author]
+											: undefined,
+										description: isNonEmpty(description)
+											? description
+											: undefined,
 										identifiers: {url: request.url, dirid},
 										languages: "zh-CN",
-										ongoing: isNonEmpty(ongoing) ? ongoing.includes("连载") : undefined
+										ongoing: isNonEmpty(ongoing)
+											? ongoing.includes("连载")
+											: undefined
 									}
 
 									yield* Queue.offer(queue, book)
@@ -53,7 +69,9 @@ export default {
 
 			return task =>
 				Effect.gen(function* () {
-					yield* Effect.promise(() => crawler.run([String(task.link)]))
+					yield* Effect.promise(() =>
+						crawler.run([String(task.link)])
+					)
 					return Chunk.toArray(yield* Queue.takeAll(queue))
 				})
 		})

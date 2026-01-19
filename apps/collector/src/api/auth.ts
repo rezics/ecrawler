@@ -16,7 +16,9 @@ export default Layer.effect(
 							drizzle
 								.select()
 								.from(schema.token)
-								.where(eq(schema.token.data, Redacted.value(token)))
+								.where(
+									eq(schema.token.data, Redacted.value(token))
+								)
 						),
 						UnknownError.mapError,
 						Effect.map(Array.length),

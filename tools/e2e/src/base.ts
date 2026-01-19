@@ -3,11 +3,15 @@ import fs from "node:fs/promises"
 import {stdout} from "node:process"
 import {Task} from "@ecrawler/schemas/task"
 
-const title = (text: string) => console.log(`\n\n${"-".repeat(7)} ${text} ${"-".repeat(7)}\n\n`)
+const title = (text: string) =>
+	console.log(`\n\n${"-".repeat(7)} ${text} ${"-".repeat(7)}\n\n`)
 
 const TaskInput = Task.pick("tags", "link")
 
-export const test = async (tasks: (typeof TaskInput.Type)[], extractors: string[]) => {
+export const test = async (
+	tasks: (typeof TaskInput.Type)[],
+	extractors: string[]
+) => {
 	syncProcessCwd()
 
 	const root = $.env["PROJECT_CWD"]
@@ -27,14 +31,23 @@ export const test = async (tasks: (typeof TaskInput.Type)[], extractors: string[
 	const DATABASE_USERNAME = "postgres"
 	const DATABASE_PASSWORD = "postgres"
 	const DATABASE_PORT = 25432
-	const DATABASE_INIT = ["CREATE DATABASE dispatcher;", "CREATE DATABASE collector;"].join("\n")
+	const DATABASE_INIT = [
+		"CREATE DATABASE dispatcher;",
+		"CREATE DATABASE collector;"
+	].join("\n")
 	await within(async () => {
 		cd("./tools/database")
 		await $`podman stop ${DATABASE_CONTAINER_NAME}`.quiet().nothrow()
 		await $`podman rm ${DATABASE_CONTAINER_NAME}`.quiet().nothrow()
 
-		const filename = path.join(os.tmpdir(), `ecrawler-e2e-database-init-${performance.now()}.sql`)
-		await fs.writeFile(filename, DATABASE_INIT, {encoding: "utf-8", mode: "777"})
+		const filename = path.join(
+			os.tmpdir(),
+			`ecrawler-e2e-database-init-${performance.now()}.sql`
+		)
+		await fs.writeFile(filename, DATABASE_INIT, {
+			encoding: "utf-8",
+			mode: "777"
+		})
 
 		const task =
 			$`podman run --rm --name ${DATABASE_CONTAINER_NAME} -p 127.0.0.1:${DATABASE_PORT}:5432 --env POSTGRES_USER=${DATABASE_USERNAME} --env POSTGRES_PASSWORD=${DATABASE_PASSWORD} -v ${filename}:/docker-entrypoint-initdb.d/init.sql:Z postgres:18`.nothrow()
@@ -100,7 +113,10 @@ export const test = async (tasks: (typeof TaskInput.Type)[], extractors: string[
 
 		const dispatcher = `http://${DISPATCHER_HOST}:${DISPATCHER_PORT}`
 
-		const filename = path.join(os.tmpdir(), `ecrawler-e2e-tasks-${performance.now()}.json`)
+		const filename = path.join(
+			os.tmpdir(),
+			`ecrawler-e2e-tasks-${performance.now()}.json`
+		)
 		await fs.writeFile(filename, JSON.stringify(tasks, null, 2), "utf-8")
 
 		const task = $`yarn start import -t ${DISPATCHER_TOKEN} -i ${filename} ${dispatcher}`
@@ -111,9 +127,11 @@ export const test = async (tasks: (typeof TaskInput.Type)[], extractors: string[
 	title("WORKER")
 	await within(async () => {
 		cd("./apps/worker")
-		$.env["DISPATCHER_BASE_URL"] = `http://${DISPATCHER_HOST}:${DISPATCHER_PORT}`
+		$.env["DISPATCHER_BASE_URL"] =
+			`http://${DISPATCHER_HOST}:${DISPATCHER_PORT}`
 		$.env["DISPATCHER_TOKEN"] = DISPATCHER_TOKEN
-		$.env["COLLECTOR_BASE_URL"] = `http://${COLLECTOR_HOST}:${COLLECTOR_PORT}`
+		$.env["COLLECTOR_BASE_URL"] =
+			`http://${COLLECTOR_HOST}:${COLLECTOR_PORT}`
 		$.env["COLLECTOR_TOKEN"] = COLLECTOR_TOKEN
 		$.env["EXTRACTORS"] = extractors.join(",")
 		const task = $`yarn run -T tsx ./src/main.ts`

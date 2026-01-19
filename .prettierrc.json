@@ -1,6 +1,4 @@
 {
-	"overrides": [{"files": "./packages/worker/implementations/**/*.ts", "options": {"printWidth": 160}}],
-	"printWidth": 120,
 	"useTabs": true,
 	"tabWidth": 4,
 	"arrowParens": "avoid",

@@ -12,6 +12,11 @@ await fs.rm("README", {force: true})
 
 const readme = []
 
-readme.push(`Effective`, `Crawler @ ${pkg.version}`, "", `🄯 ${new Date().getFullYear()} NMNM.CC, REZICS`)
+readme.push(
+	`Effective`,
+	`Crawler @ ${pkg.version}`,
+	"",
+	`🄯 ${new Date().getFullYear()} NMNM.CC, REZICS`
+)
 
 await fs.writeFile("README", readme.join("\n"), "utf-8")

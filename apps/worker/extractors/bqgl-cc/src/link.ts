@@ -24,10 +24,17 @@ export default {
 										$('a[href^="/look/"]').toArray(),
 										Array.map(el => $(el).attr("href")),
 										Array.filter(Predicate.isNotNullable),
-										Array.filter(link => /^\/look\/\d+\/?$/.test(link)),
+										Array.filter(link =>
+											/^\/look\/\d+\/?$/.test(link)
+										),
 										Array.map(link => {
 											try {
-												return Option.some(new URL(link, request.url).toString())
+												return Option.some(
+													new URL(
+														link,
+														request.url
+													).toString()
+												)
 											} catch (error) {
 												return Option.none()
 											}
@@ -47,7 +54,9 @@ export default {
 
 			return task =>
 				Effect.gen(function* () {
-					yield* Effect.promise(() => crawler.run([String(task.link)]))
+					yield* Effect.promise(() =>
+						crawler.run([String(task.link)])
+					)
 					return Chunk.toArray(yield* Queue.takeAll(queue))
 				})
 		})

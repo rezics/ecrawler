@@ -8,5 +8,8 @@ import {ServerLive} from "@ecrawler/core/server/layer.ts"
 
 export default Layer.provideMerge(
 	ServerLive,
-	HttpApiBuilder.api(Collector).pipe(Layer.provide(system), Layer.provide(Layer.provideMerge(root, auth)))
+	HttpApiBuilder.api(Collector).pipe(
+		Layer.provide(system),
+		Layer.provide(Layer.provideMerge(root, auth))
+	)
 )

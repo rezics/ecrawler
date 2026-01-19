@@ -9,7 +9,9 @@ const ApiLayer = api.pipe(Layer.provide(Database.Default))
 const program = Effect.gen(function* () {
 	yield* Effect.log("Starting Collector Server...")
 
-	return yield* Layer.launch(ApiLayer).pipe(Effect.ensuring(Effect.log("Shutting down Collector Server...")))
+	return yield* Layer.launch(ApiLayer).pipe(
+		Effect.ensuring(Effect.log("Shutting down Collector Server..."))
+	)
 })
 
 program.pipe(NodeRuntime.runMain)

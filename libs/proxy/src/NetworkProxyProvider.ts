@@ -4,10 +4,9 @@ import type {NetworkProxy} from "./NetworkProxy"
 export type NetworkProxyProvider = NetworkProxyProvider.NetworkProxyProvider
 
 export namespace NetworkProxyProvider {
-	export class NetworkProxyProvider extends Context.Tag("@ecrawler/proxy/NetworkProxyProvider")<
-		NetworkProxyProvider,
-		Queue.Queue<NetworkProxy>
-	>() {}
+	export class NetworkProxyProvider extends Context.Tag(
+		"@ecrawler/proxy/NetworkProxyProvider"
+	)<NetworkProxyProvider, Queue.Queue<NetworkProxy>>() {}
 
 	export const roundRobin = (
 		...providers: Context.Tag.Service<NetworkProxyProvider>[]
@@ -17,7 +16,9 @@ export namespace NetworkProxyProvider {
 
 			yield* Effect.fork(
 				Effect.forEach(providers, provider =>
-					Queue.take(provider).pipe(Effect.flatMap(proxy => Queue.offer(out, proxy)))
+					Queue.take(provider).pipe(
+						Effect.flatMap(proxy => Queue.offer(out, proxy))
+					)
 				).pipe(Effect.forever)
 			)
 

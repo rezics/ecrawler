@@ -8,8 +8,18 @@
 			"name": "results",
 			"schema": "",
 			"columns": {
-				"id": {"name": "id", "type": "uuid", "primaryKey": true, "notNull": true},
-				"by": {"name": "by", "type": "uuid", "primaryKey": false, "notNull": true},
+				"id": {
+					"name": "id",
+					"type": "uuid",
+					"primaryKey": true,
+					"notNull": true
+				},
+				"by": {
+					"name": "by",
+					"type": "uuid",
+					"primaryKey": false,
+					"notNull": true
+				},
 				"created_at": {
 					"name": "created_at",
 					"type": "timestamp with time zone",
@@ -24,9 +34,25 @@
 					"notNull": true,
 					"default": "now()"
 				},
-				"tags": {"name": "tags", "type": "text[]", "primaryKey": false, "notNull": true, "default": "'{}'"},
-				"link": {"name": "link", "type": "text", "primaryKey": false, "notNull": true},
-				"data": {"name": "data", "type": "jsonb", "primaryKey": false, "notNull": true}
+				"tags": {
+					"name": "tags",
+					"type": "text[]",
+					"primaryKey": false,
+					"notNull": true,
+					"default": "'{}'"
+				},
+				"link": {
+					"name": "link",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"data": {
+					"name": "data",
+					"type": "jsonb",
+					"primaryKey": false,
+					"notNull": true
+				}
 			},
 			"indexes": {},
 			"foreignKeys": {},
@@ -39,7 +65,14 @@
 		"public.token": {
 			"name": "token",
 			"schema": "",
-			"columns": {"data": {"name": "data", "type": "text", "primaryKey": true, "notNull": true}},
+			"columns": {
+				"data": {
+					"name": "data",
+					"type": "text",
+					"primaryKey": true,
+					"notNull": true
+				}
+			},
 			"indexes": {},
 			"foreignKeys": {},
 			"compositePrimaryKeys": {},
