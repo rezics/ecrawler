@@ -1,0 +1,21 @@
+import {pgTable, uuid, timestamp, jsonb, text} from "drizzle-orm/pg-core"
+import {v7} from "uuid"
+import {token} from "./token.ts"
+
+export const results = pgTable("results", {
+  id: uuid()
+    .primaryKey()
+    .notNull()
+    .$defaultFn(() => v7()),
+  by: uuid().notNull(),
+  created_at: timestamp({withTimezone: true}).notNull().defaultNow(),
+  updated_at: timestamp({withTimezone: true})
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+  tags: text().array().notNull().default([]),
+  link: text().notNull(),
+  data: jsonb().notNull()
+})
+
+export {token}

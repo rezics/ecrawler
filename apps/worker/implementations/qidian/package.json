@@ -1,0 +1,14 @@
+{
+  "name": "@ecrawler/implementation-qidian",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./*": "./src/*"
+  },
+  "dependencies": {
+    "@ecrawler/schemas": "workspace:*",
+    "@ecrawler/worker": "workspace:*",
+    "crawlee": "^3.16.0",
+    "playwright": "^1.58.2"
+  }
+}

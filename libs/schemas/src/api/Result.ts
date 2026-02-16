@@ -1,14 +1,12 @@
-import {Auth} from "@ecrawler/core/api/auth.ts"
-import {Result} from "@ecrawler/schemas"
-import {HttpApiEndpoint, HttpApiGroup, OpenApi} from "@effect/platform"
 import {Schema} from "effect"
+import * as Result from "../Result.ts"
 
 export class ResultNotFoundError extends Schema.TaggedError<ResultNotFoundError>()(
   "ResultNotFoundError",
   {}
 ) {}
 
-const QueryParams = Schema.Struct({
+export const QueryParams = Schema.Struct({
   id: Schema.UUID.annotations({
     description: "Filter by result ID\n\n按结果 ID 筛选"
   }),
@@ -44,7 +42,7 @@ const QueryParams = Schema.Struct({
   })
   .pipe(Schema.partial)
 
-const CreatePayload = Schema.Struct({
+export const CreatePayload = Schema.Struct({
   by: Schema.UUID.annotations({
     description: "Worker ID that produced the result\n\n产生结果的工作节点 ID"
   }),
@@ -58,7 +56,7 @@ const CreatePayload = Schema.Struct({
   description: "Payload for creating a new result\n\n创建新结果的载荷"
 })
 
-const UpdatePayload = Schema.Struct({
+export const UpdatePayload = Schema.Struct({
   by: Schema.UUID.annotations({
     description: "Worker ID that produced the result\n\n产生结果的工作节点 ID"
   }),
@@ -78,53 +76,17 @@ const UpdatePayload = Schema.Struct({
   })
   .pipe(Schema.partial)
 
-export default HttpApiGroup.make("collector")
-  .middleware(Auth)
-  .annotate(
-    OpenApi.Description,
-    "Operations related to collecting and managing crawl results\n\n与收集和管理抓取结果相关的操作"
-  )
-  .add(
-    HttpApiEndpoint.post("createResult")`/results`
-      .setPayload(CreatePayload)
-      .addSuccess(Schema.Struct({id: Schema.UUID}))
-      .annotate(OpenApi.Summary, "Create a new result")
-      .annotate(
-        OpenApi.Description,
-        "Submits a new crawl result to the collector\n\n向收集器提交新的抓取结果"
-      )
-  )
-  .add(
-    HttpApiEndpoint.get("getResults")`/results`
-      .setUrlParams(QueryParams)
-      .addSuccess(Schema.Array(Result.Api.pipe(Schema.omit("data"))))
-      // .addError(ResultNotFoundError)
-      .annotate(OpenApi.Summary, "List results")
-      .annotate(
-        OpenApi.Description,
-        "Retrieves a list of results based on query filters\n\n根据查询过滤器检索结果列表"
-      )
-  )
-  .add(
-    HttpApiEndpoint.patch("updateResult")`/results/:id`
-      .setPath(Schema.Struct({id: Schema.UUID}))
-      .setPayload(UpdatePayload)
-      .addSuccess(Schema.Void)
-      .addError(ResultNotFoundError)
-      .annotate(OpenApi.Summary, "Update a result")
-      .annotate(
-        OpenApi.Description,
-        "Updates an existing result by its ID\n\n根据 ID 更新现有结果"
-      )
-  )
-  .add(
-    HttpApiEndpoint.del("deleteResult")`/results/:id`
-      .setPath(Schema.Struct({id: Schema.UUID}))
-      .addSuccess(Schema.Void)
-      .addError(ResultNotFoundError)
-      .annotate(OpenApi.Summary, "Delete a result")
-      .annotate(
-        OpenApi.Description,
-        "Removes a result from the collector by its ID\n\n根据 ID 从收集器中移除结果"
-      )
-  )
+export const ApiInput = Result.Result
+export type ApiInput = Result.Result
+
+export const ApiInputWithoutData = Result.ApiInputWithoutData
+export type ApiInputWithoutData = Result.ApiInputWithoutData
+
+export const ResultApi = {
+  ApiInput,
+  ApiInputWithoutData,
+  ResultNotFoundError,
+  QueryParams,
+  CreatePayload,
+  UpdatePayload
+}

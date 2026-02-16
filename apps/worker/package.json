@@ -11,16 +11,14 @@
     "build": "yarn run build:bundle && yarn run build:podman"
   },
   "exports": {
+    ".": "./src/index.ts",
     "./*": "./src/*"
   },
   "dependencies": {
     "@ecrawler/api": "workspace:*",
-    "@ecrawler/extractor-bqgl-cc": "workspace:^",
-    "@ecrawler/extractor-dummy": "workspace:^",
-    "@ecrawler/extractor-qidian": "workspace:^",
     "@ecrawler/schemas": "workspace:*"
   },
   "workspaces": [
-    "./extractors/*"
+    "./implementations/*"
   ]
 }

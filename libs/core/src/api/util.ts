@@ -1,4 +1,10 @@
-import {HttpApi, HttpApiBuilder, HttpApiEndpoint, HttpApiGroup, OpenApi} from "@effect/platform"
+import {
+  HttpApi,
+  HttpApiBuilder,
+  HttpApiEndpoint,
+  HttpApiGroup,
+  OpenApi
+} from "@effect/platform"
 import {Effect, Schema} from "effect"
 import {UnknownError} from "./error"
 
@@ -8,7 +14,10 @@ const Api = HttpApi.make("util")
       HttpApiEndpoint.head("health")`/health`
         .addSuccess(Schema.Void)
         .annotate(OpenApi.Summary, "Check health status")
-        .annotate(OpenApi.Description, "Checks if the service is healthy\n\n检查服务是否健康")
+        .annotate(
+          OpenApi.Description,
+          "Checks if the service is healthy\n\n检查服务是否健康"
+        )
     )
   )
   .addError(UnknownError)

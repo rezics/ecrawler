@@ -5,7 +5,7 @@
     "start": "yarn run -T tsx ./src/main.ts"
   },
   "dependencies": {
-    "@effect/cli": "^0.73.0",
+    "@effect/cli": "^0.73.2",
     "@effect/printer": "^0.47.0",
     "@effect/printer-ansi": "^0.47.0",
     "@effect/typeclass": "^0.38.0"
