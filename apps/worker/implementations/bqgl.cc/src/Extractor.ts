@@ -1,13 +1,13 @@
 import {Array, Effect, Layer, Option, pipe, Predicate, Queue} from "effect"
 import {Extractor} from "@ecrawler/worker/services/Extractor.ts"
-import {Book} from "@ecrawler/schemas"
+import {Book, Link, Record} from "@ecrawler/schemas"
 import {CheerioCrawler} from "crawlee"
 
 export const BQGLExtractor = Layer.scoped(
   Extractor,
   Effect.gen(function* () {
-    const data = yield* Queue.unbounded<Book.Book>()
-    const link = yield* Queue.unbounded<string>()
+    const recordQueue = yield* Queue.unbounded<Record.Record>()
+    const linkQueue = yield* Queue.unbounded<Link.Link>()
 
     const crawler = yield* Effect.acquireRelease(
       Effect.sync(
@@ -52,7 +52,10 @@ export const BQGLExtractor = Layer.scoped(
                   chapters: []
                 })
 
-                yield* Queue.offer(data, book)
+                yield* Queue.offer(
+                  recordQueue,
+                  Record.Record.make({data: book})
+                )
 
                 const links = pipe(
                   $('a[href^="/look/"]').toArray(),
@@ -61,7 +64,7 @@ export const BQGLExtractor = Layer.scoped(
                   Array.filter(link => /^\/look\/\d+\/?$/.test(link)),
                   Array.map(link => {
                     try {
-                      return Option.some(new URL(link, request.url).toString())
+                      return Option.some(new URL(link, request.url))
                     } catch (error) {
                       return Option.none()
                     }
@@ -70,9 +73,7 @@ export const BQGLExtractor = Layer.scoped(
                   Array.dedupe
                 )
 
-                yield* Effect.log(links)
-
-                yield* Queue.offerAll(link, links)
+                yield* Queue.offerAll(linkQueue, links)
               }).pipe(Effect.runPromise)
           })
       ),
@@ -85,8 +86,8 @@ export const BQGLExtractor = Layer.scoped(
           yield* Effect.promise(() => crawler.run([String(task.link)]))
 
           return {
-            data: yield* Queue.takeAll(data),
-            link: yield* Queue.takeAll(link)
+            records: yield* Queue.takeAll(recordQueue),
+            links: yield* Queue.takeAll(linkQueue)
           }
         })
     })

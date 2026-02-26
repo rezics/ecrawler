@@ -1,47 +1,47 @@
-import {token} from "@ecrawler/core/database/schema.ts"
-import {
-  pgTable,
-  uuid,
-  timestamp,
-  jsonb,
-  text,
-  unique
-} from "drizzle-orm/pg-core"
-import {v7} from "uuid"
+import {integer, sqliteTable, text} from "drizzle-orm/sqlite-core"
 
-export const tasks = pgTable(
-  "tasks",
-  {
-    id: uuid()
-      .primaryKey()
-      .notNull()
-      .$defaultFn(() => v7()),
-    by: uuid(),
-    created_at: timestamp({withTimezone: true}).notNull().defaultNow(),
-    updated_at: timestamp({withTimezone: true})
-      .notNull()
-      .defaultNow()
-      .$onUpdate(() => new Date()),
-    tags: text().array().notNull().default([]),
-    link: text().notNull()
-  },
-  t => [unique().on(t.tags, t.link)]
-)
-
-export const results = pgTable("results", {
-  id: uuid()
-    .primaryKey()
-    .notNull()
-    .$defaultFn(() => v7()),
-  by: uuid().notNull(),
-  created_at: timestamp({withTimezone: true}).notNull().defaultNow(),
-  updated_at: timestamp({withTimezone: true})
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-  tags: text().array().notNull().default([]),
-  link: text().notNull(),
-  data: jsonb().notNull()
+export const user = sqliteTable("user", {
+  id: text("id").primaryKey(),
+  username: text("username").notNull(),
+  password: text("password").notNull()
 })
 
-export {token}
+export const link = sqliteTable("link", {
+  id: text("id").primaryKey(),
+  url: text("url").notNull()
+})
+
+export const token = sqliteTable("token", {
+  data: text("data").primaryKey().notNull()
+})
+
+export const tasks = sqliteTable("tasks", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  created_at: integer("created_at", {mode: "timestamp_ms"})
+    .notNull()
+    .$defaultFn(() => Date.now()),
+  updated_at: integer("updated_at", {mode: "timestamp_ms"})
+    .notNull()
+    .$defaultFn(() => Date.now()),
+  tags: text("tags", {mode: "json"}).$type<string[]>().notNull(),
+  link: text("link").notNull(),
+  by: text("by")
+})
+
+export const results = sqliteTable("results", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  created_at: integer("created_at", {mode: "timestamp_ms"})
+    .notNull()
+    .$defaultFn(() => Date.now()),
+  updated_at: integer("updated_at", {mode: "timestamp_ms"})
+    .notNull()
+    .$defaultFn(() => Date.now()),
+  tags: text("tags", {mode: "json"}).$type<string[]>().notNull(),
+  link: text("link").notNull(),
+  by: text("by").notNull(),
+  data: text("data", {mode: "json"}).$type<unknown>()
+})

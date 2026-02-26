@@ -1,22 +1,17 @@
-import Api, {ResultNotFoundError} from "@ecrawler/api/collector/index.ts"
+import Api from "@ecrawler/api/collector/index.ts"
 import DispatcherApi from "@ecrawler/api/dispatcher/index.ts"
-import {TaskNotFoundError} from "@ecrawler/api/dispatcher/groups/root.ts"
+import {ResultNotFoundError} from "@ecrawler/api/schemas/Result.ts"
+import {TaskNotFoundError} from "@ecrawler/api/schemas/Task.ts"
 import {HttpApiBuilder} from "@effect/platform"
 import {Array, Effect, Layer, Schedule, Duration, pipe, Option} from "effect"
 import * as schema from "../../database/schema.ts"
-import {
-  and,
-  arrayContained,
-  arrayContains,
-  eq,
-  gte,
-  lt,
-  SQL,
-  asc,
-  isNull
-} from "drizzle-orm"
+import {and, eq, gte, lt, SQL, asc, isNull} from "drizzle-orm"
 import {UnknownError} from "@ecrawler/core/api/error.ts"
 import {Database} from "../../database/client.ts"
+import {
+  tagsContained as tagsContainedFilter,
+  tagsContains as tagsContainsFilter
+} from "../../database/sqlite-tags.ts"
 
 const collectorGroup = Layer.unwrapEffect(
   Effect.gen(function* () {
@@ -93,7 +88,7 @@ const collectorGroup = Layer.unwrapEffect(
                       urlParams.id && eq(schema.results.id, urlParams.id),
                       urlParams.by && eq(schema.results.by, urlParams.by),
                       urlParams.tags &&
-                        arrayContained(
+                        tagsContainedFilter(
                           schema.results.tags,
                           Array.fromIterable(urlParams.tags)
                         ),
@@ -180,7 +175,7 @@ const dispatcherGroup = Layer.unwrapEffect(
                       urlParams.id && eq(schema.tasks.id, urlParams.id),
                       urlParams.by && eq(schema.tasks.by, urlParams.by),
                       urlParams.tags &&
-                        arrayContains(
+                        tagsContainsFilter(
                           schema.tasks.tags,
                           Array.fromIterable(urlParams.tags)
                         ),
@@ -211,7 +206,7 @@ const dispatcherGroup = Layer.unwrapEffect(
                       ...[
                         urlParams.id && eq(schema.tasks.id, urlParams.id),
                         urlParams.tags &&
-                          arrayContains(
+                          tagsContainsFilter(
                             schema.tasks.tags,
                             Array.fromIterable(urlParams.tags)
                           ),

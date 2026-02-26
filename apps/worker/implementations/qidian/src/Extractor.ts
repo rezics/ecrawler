@@ -3,14 +3,13 @@ import {Extractor} from "@ecrawler/worker/services/Extractor.ts"
 import {Book} from "@ecrawler/schemas"
 import {PlaywrightCrawler} from "crawlee"
 import {isNotUndefined} from "effect/Predicate"
-import type {Task} from "@ecrawler/schemas"
 
 const multipliers: Record<string, number> = {
   十: 10,
   百: 100,
-  千: 1000,
-  万: 10000,
-  亿: 100000000
+  千: 1_000,
+  万: 10_000,
+  亿: 100_000_000
 }
 
 const parseChineseNumber = (
@@ -96,13 +95,13 @@ export const QidianExtractor = Layer.scoped(
     )
 
     return Extractor.of({
-      extract: (task: typeof Task.Task.Type) =>
+      extract: task =>
         Effect.gen(function* () {
           yield* Effect.promise(() => crawler.run([String(task.link)]))
 
           return {
-            data: yield* Queue.takeAll(data),
-            link: yield* Queue.takeAll(link)
+            records: yield* Queue.takeAll(data),
+            links: yield* Queue.takeAll(link)
           }
         })
     })

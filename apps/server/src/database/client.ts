@@ -1,28 +1,38 @@
-import * as schema from "./schema.ts"
-import {Effect, Redacted, Schedule} from "effect"
-import {ServerConfig} from "@ecrawler/core/server/config.ts"
-import {drizzle} from "drizzle-orm/postgres-js"
-import {migrate} from "drizzle-orm/postgres-js/migrator"
-import path from "node:path"
-import process from "node:process"
+import {drizzle} from "drizzle-orm/libsql"
+import {migrate} from "drizzle-orm/libsql/migrator"
+import {Effect} from "effect"
+import {dirname, join} from "node:path"
+import {fileURLToPath} from "node:url"
+
+const getDatabaseUrl = (): string => {
+  const url = process.env.DATABASE_URL
+  if (url === undefined || url === "") {
+    throw new Error("DATABASE_URL is required")
+  }
+  return url
+}
+
+const migrationsFolder = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "migrations"
+)
 
 export class Database extends Effect.Service<Database>()(
-  "@ecrawler/server/database/client/Database",
+  "@ecrawler/server/database/client",
   {
+    dependencies: [],
     effect: Effect.gen(function* () {
-      const config = yield* ServerConfig
-      const db = drizzle(Redacted.value(config.database.url), {schema})
-      yield* Effect.tryPromise(() =>
-        migrate(db, {
-          migrationsFolder: path.join(
-            process.cwd(),
-            "src",
-            "database",
-            "migrations"
-          )
-        })
+      const url = yield* Effect.try(() => getDatabaseUrl()).pipe(
+        Effect.mapError(
+          e =>
+            new Error(
+              e instanceof Error ? e.message : "DATABASE_URL is required"
+            )
+        )
       )
+      const db = drizzle(url)
+      yield* Effect.promise(() => migrate(db, {migrationsFolder}))
       return db
-    }).pipe(Effect.retry({schedule: Schedule.spaced("1 seconds"), times: 3}))
+    })
   }
 ) {}

@@ -1,25 +1,17 @@
 {
-  "include": ["**/*"],
-  "compilerOptions": {
-    "plugins": [{"name": "@effect/language-service"}],
-
-    "lib": ["ESNext"],
-    "target": "ESNext",
-    "module": "esnext",
-    "moduleDetection": "force",
-    "jsx": "react-jsx",
-    "allowJs": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "noEmit": true,
-    "strict": true,
-    "skipLibCheck": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noPropertyAccessFromIndexSignature": true
-  }
+  "files": [],
+  "references": [
+    {"path": "./libs/schemas"},
+    {"path": "./libs/core"},
+    {"path": "./libs/kv"},
+    {"path": "./libs/proxy"},
+    {"path": "./libs/api"},
+    {"path": "./apps/server"},
+    {"path": "./apps/worker"},
+    {"path": "./apps/worker/implementations/bqgl.cc"},
+    {"path": "./apps/worker/implementations/qidian"},
+    {"path": "./apps/cli"},
+    {"path": "./tools/readme"},
+    {"path": "./tools/update"}
+  ]
 }

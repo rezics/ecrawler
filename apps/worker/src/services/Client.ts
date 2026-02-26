@@ -24,7 +24,7 @@ export class Client extends Effect.Tag("Client")<
           HttpClient.mapRequest(
             HttpClientRequest.setHeader(
               "Authorization",
-              `Bearer ${config.token}`
+              `Bearer ${config.secretKey}`
             )
           )
         )
@@ -40,7 +40,7 @@ export class Client extends Effect.Tag("Client")<
         baseUrl: config.baseUrl
       })
 
-      const queue = yield* Queue.unbounded<Task.Task>()
+      const taskQueue = yield* Queue.unbounded<Task.Task>()
 
       const pollTimeout = 30
       const tags = config.tags
@@ -50,7 +50,7 @@ export class Client extends Effect.Tag("Client")<
           payload: {by: config.id},
           urlParams: {tags, timeout: pollTimeout}
         })
-        yield* Queue.offer(queue, task)
+        yield* Queue.offer(taskQueue, task)
       }).pipe(
         Effect.retry(
           Schedule.exponential("1 seconds").pipe(Schedule.upTo("1 minutes"))
@@ -60,23 +60,30 @@ export class Client extends Effect.Tag("Client")<
       )
 
       return Client.of({
-        queue,
+        queue: taskQueue,
         submit: result =>
           Effect.gen(function* () {
-            const firstLink = yield* Iterable.head(result.link)
+            const firstLink = yield* Iterable.head(result.links)
 
             yield* Effect.all(
-              Iterable.map(result.data, data =>
+              Iterable.map(result.records, data =>
                 collectorClient.collector.createResult({
-                  payload: {by: config.id, tags, link: firstLink, data}
+                  payload: {
+                    by: config.id,
+                    tags,
+                    link: firstLink.toString(),
+                    data
+                  }
                 })
               ),
               {concurrency: "unbounded"}
             ).pipe(Effect.asVoid)
 
             yield* Effect.all(
-              Iterable.map(result.link, link =>
-                dispatcherClient.dispatcher.createTask({payload: {link, tags}})
+              Iterable.map(result.links, link =>
+                dispatcherClient.dispatcher.createTask({
+                  payload: {link: link.toString(), tags}
+                })
               ),
               {concurrency: "unbounded"}
             ).pipe(Effect.asVoid)
