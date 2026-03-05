@@ -1,8 +1,17 @@
-import {Effect, Layer, Option, pipe, Queue, Record} from "effect"
+import {
+  Array,
+  Effect,
+  Layer,
+  Option,
+  pipe,
+  Predicate,
+  Queue,
+  Record,
+  Runtime
+} from "effect"
 import {Extractor} from "@ecrawler/worker/services/Extractor.ts"
-import {Book} from "@ecrawler/schemas"
+import {Book, Link, Record as RecordSchema} from "@ecrawler/schemas"
 import {PlaywrightCrawler} from "crawlee"
-import {isNotUndefined} from "effect/Predicate"
 
 const multipliers: Record<string, number> = {
   十: 10,
@@ -35,60 +44,81 @@ const parseChineseNumber = (
     })
   )
 
+const isNotUndefined = Predicate.isNotUndefined
+
 export const QidianExtractor = Layer.scoped(
   Extractor,
   Effect.gen(function* () {
-    const data = yield* Queue.unbounded<Book.Book>()
-    const link = yield* Queue.unbounded<string>()
+    const recordQueue = yield* Queue.unbounded<RecordSchema.Record>()
+    const linkQueue = yield* Queue.unbounded<Link.Link>()
+
+    const runtime = yield* Effect.runtime()
 
     const crawler = yield* Effect.acquireRelease(
       Effect.sync(
         () =>
           new PlaywrightCrawler({
-            requestHandler: async ({page}) =>
-              pipe(
-                {
-                  cover: () =>
-                    page
-                      .locator(`[id="book-detail"] [id="bookImg"] img`)
-                      .first()
-                      .getAttribute("src"),
-                  title: () => page.locator("#bookName").first().textContent(),
-                  author: () =>
-                    page.locator(".writer-name").first().textContent(),
-                  tags: () =>
-                    page.locator("p.book-attribute").first().textContent(),
-                  description: () =>
-                    page.locator("#book-intro-detail").first().textContent(),
-                  length: () =>
-                    page.locator(`.book-info em`).first().textContent()
-                },
-                Record.map(Effect.promise),
-                Effect.allWith({concurrency: "unbounded"}),
-                Effect.map(raw => {
-                  const book = Book.Book.make({
-                    cover: raw.cover ? `https:${raw.cover}` : undefined,
-                    title: raw.title?.trim(),
-                    authors: [raw.author?.trim()].filter(isNotUndefined),
-                    tags:
-                      raw.tags
-                        ?.split("·")
-                        .map(s => s.trim())
-                        .filter(isNotUndefined) || [],
-                    description: raw.description?.trim(),
-                    languages: ["zh-CN"],
-                    length: pipe(
-                      raw.length,
-                      parseChineseNumber,
-                      Option.getOrUndefined
-                    )
-                  })
-                  return book
-                }),
-                Effect.tap(book => Queue.offer(data, book)),
-                Effect.asVoid,
-                Effect.runPromise
-              )
+            requestHandler: async ({page, request}) =>
+              Effect.gen(function* () {
+                const raw = yield* pipe(
+                  {
+                    cover: () =>
+                      page
+                        .locator(`[id="book-detail"] [id="bookImg"] img`)
+                        .first()
+                        .getAttribute("src"),
+                    title: () =>
+                      page.locator("#bookName").first().textContent(),
+                    author: () =>
+                      page.locator(".writer-name").first().textContent(),
+                    tags: () =>
+                      page.locator("p.book-attribute").first().textContent(),
+                    description: () =>
+                      page.locator("#book-intro-detail").first().textContent(),
+                    length: () =>
+                      page.locator(`.book-info em`).first().textContent()
+                  },
+                  Record.map(Effect.promise),
+                  Effect.allWith({concurrency: "unbounded"})
+                )
+
+                const book = Book.Book.make({
+                  cover: raw.cover ? `https:${raw.cover}` : undefined,
+                  title: raw.title?.trim(),
+                  authors: [raw.author?.trim()].filter(isNotUndefined),
+                  tags:
+                    raw.tags
+                      ?.split("·")
+                      .map(s => s.trim())
+                      .filter(isNotUndefined) || [],
+                  description: raw.description?.trim(),
+                  languages: ["zh-CN"],
+                  length: pipe(
+                    raw.length,
+                    parseChineseNumber,
+                    Option.getOrUndefined
+                  )
+                })
+
+                yield* Queue.offer(
+                  recordQueue,
+                  RecordSchema.Record.make({data: book})
+                )
+
+                const links = pipe(
+                  Array.of(request.url),
+                  Array.map(link => {
+                    try {
+                      return Option.some(new URL(link))
+                    } catch (error) {
+                      return Option.none()
+                    }
+                  }),
+                  Array.getSomes
+                )
+
+                yield* Queue.offerAll(linkQueue, links)
+              }).pipe(Runtime.runPromise(runtime))
           })
       ),
       crawler => Effect.promise(() => crawler.teardown())
@@ -100,8 +130,8 @@ export const QidianExtractor = Layer.scoped(
           yield* Effect.promise(() => crawler.run([String(task.link)]))
 
           return {
-            records: yield* Queue.takeAll(data),
-            links: yield* Queue.takeAll(link)
+            records: yield* Queue.takeAll(recordQueue),
+            links: yield* Queue.takeAll(linkQueue)
           }
         })
     })
