@@ -1,7 +1,6 @@
 import {
   Array,
   Effect,
-  Iterable,
   Layer,
   Option,
   pipe,
@@ -12,7 +11,7 @@ import {
 import {Extractor} from "@ecrawler/worker/services/Extractor.ts"
 import {Book, Link, Record} from "@ecrawler/schemas"
 import {CheerioCrawler, ProxyConfiguration} from "crawlee"
-import {NetworkProxy, Proxy} from "@ecrawler/proxy"
+import {NetworkProxy} from "@ecrawler/proxy"
 
 export const BQGLExtractor = Layer.scoped(
   Extractor,
@@ -29,10 +28,17 @@ export const BQGLExtractor = Layer.scoped(
         () =>
           new CheerioCrawler({
             proxyConfiguration: new ProxyConfiguration({
-              newUrlFunction: () =>
-                proxies[Symbol.iterator]()
-                  .next()
-                  .pipe(Runtime.runPromise(runtime), NetworkProxy.toProxyUrl)
+              newUrlFunction: () => {
+                const next = proxies[Symbol.iterator]().next()
+
+                if (next.done) {
+                  return null
+                }
+
+                return next.value
+                  .pipe(Runtime.runPromise(runtime))
+                  .then(NetworkProxy.toProxyUrl)
+              }
             }),
             requestHandler: async ({$, request}) =>
               Effect.gen(function* () {
