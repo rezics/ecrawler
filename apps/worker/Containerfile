@@ -1,7 +1,0 @@
-FROM node:24
-WORKDIR /app
-COPY dist/main.mjs .
-COPY dist/entrypoint.mjs .
-COPY src src
-ENV NODE_ENV=production
-ENTRYPOINT [ "node", "entrypoint.mjs" ]

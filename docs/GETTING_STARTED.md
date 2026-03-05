@@ -4,15 +4,14 @@
 
 - **Node.js**: >= 18 (推荐 20+)
 - **Yarn**: v4.12.0+
-- **Docker** 和 **Docker Compose** (用于数据库)
-- **PostgreSQL**: 13+ (本地或容器)
+- **PostgreSQL**: 13+ (本地安装或云托管)
 
 检查版本：
 
 ```bash
 node --version      # v20.x 或更高
 yarn --version      # 4.x
-docker --version    # 20+
+psql --version      # PostgreSQL 13+
 ```
 
 ## 项目初始化
@@ -42,41 +41,35 @@ ls -la apps/server/dist/  # 检查是否有构建输出
 
 ## 数据库设置
 
-### 方式 1: 使用 Docker Compose（推荐）
+### 方式 1: 本地 PostgreSQL（推荐）
 
 ```bash
-# 进入数据库工具目录
-cd tools/database
+# 安装 PostgreSQL（如果尚未安装）
+# Ubuntu/Debian
+sudo apt-get install postgresql postgresql-contrib
 
-# 启动 PostgreSQL 容器
-docker-compose up -d
+# macOS
+brew install postgresql
 
-# 检查容器状态
-docker-compose ps
-```
+# 启动服务
+sudo systemctl start postgresql  # Linux
+brew services start postgresql    # macOS
 
-**默认配置**:
-
-- Host: `localhost`
-- Port: `5432`
-- Username: `postgres`
-- Password: `postgres`
-- Database: `ecrawler`
-
-### 方式 2: 使用本地 PostgreSQL
-
-```bash
 # 创建数据库和用户（仅首次）
-createdb ecrawler
-createuser -P postgres  # 输入密码
+sudo -u postgres createdb ecrawler
+sudo -u postgres createuser -P ecrawler_user  # 输入密码
 
 # 配置连接字符串
-export DATABASE_URL="postgresql://postgres:password@localhost:5432/ecrawler"
+export DATABASE_URL="postgresql://ecrawler_user:password@localhost:5432/ecrawler"
 ```
 
-### 方式 3: 云数据库
+### 方式 2: 云数据库
 
-更新 `.env.development` 或 `.env.production` 中的 `DATABASE_URL`。
+在云提供商（AWS RDS、阿里云 RDS 等）创建 PostgreSQL 实例，然后更新连接字符串：
+
+```bash
+export DATABASE_URL="postgresql://user:password@host:5432/ecrawler"
+```
 
 ## 环境配置
 
@@ -267,13 +260,18 @@ yarn install
 
 ```bash
 # 检查 PostgreSQL 是否运行
-docker-compose -f tools/database/compose.yaml ps
+sudo systemctl status postgresql  # Linux
+brew services list | grep postgres  # macOS
 
 # 如果未运行，启动它
-docker-compose -f tools/database/compose.yaml up -d
+sudo systemctl start postgresql  # Linux
+brew services start postgresql    # macOS
 
 # 检查连接字符串
 echo $DATABASE_URL
+
+# 测试连接
+psql $DATABASE_URL -c "SELECT version();"
 ```
 
 ### 问题 3: TypeScript 编译错误
@@ -344,6 +342,6 @@ WORKER_TIMEOUT=120000 yarn workspace @ecrawler/worker run dev
 **快速链接**:
 
 - `yarn install` - 安装依赖
-- `docker-compose up -d` - 启动数据库
+- `sudo systemctl start postgresql` - 启动数据库（Linux）
 - `yarn workspace @ecrawler/server run dev` - 启动服务器
 - `yarn format` - 格式化代码

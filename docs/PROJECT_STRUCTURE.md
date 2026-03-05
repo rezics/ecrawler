@@ -93,8 +93,8 @@ ecrawler/
 │
 ├── tools/                         # 开发工具和配置
 │   ├── database/
-│   │   ├── compose.yaml          # Docker Compose 配置
 │   │   ├── init.sql              # 数据库初始化脚本
+│   │   ├── backup.sh             # 数据库备份脚本
 │   │   └── README.md
 │   │
 │   ├── readme/                    # README 自动生成工具

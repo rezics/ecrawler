@@ -114,7 +114,8 @@ ecrawler 是一个分布式网页爬虫系统，采用 **Monorepo** 结构，由
 
 #### `tools/database`
 
-- **compose.yaml**: Docker Compose 配置，快速启动本地 PostgreSQL
+- **init.sql**: 数据库初始化脚本（可选）
+- **backup.sh**: 数据库备份脚本
 
 #### `tools/readme`
 
@@ -183,8 +184,8 @@ yarn workspace @ecrawler/cli run start
 
 - **Server**: 单实例或多实例（负载均衡）
 - **Worker**: 可弹性伸缩的多实例集群
-- **Database**: PostgreSQL（外部托管或容器化）
-- **通信**: 基于 RPC/消息队列（可选）
+- **Database**: PostgreSQL（云托管 RDS 或本地部署）
+- **通信**: 基于 HTTP/RPC（可选）
 
 ## 扩展点
 
