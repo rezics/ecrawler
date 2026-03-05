@@ -68,11 +68,7 @@ export class Client extends Effect.Tag("Client")<
             yield* Effect.all(
               Iterable.map(result.records, data =>
                 collectorClient.collector.createResult({
-                  payload: {
-                    tags,
-                    link: firstLink.toString(),
-                    data
-                  }
+                  payload: {tags, link: firstLink.toString(), data}
                 })
               ),
               {concurrency: "unbounded"}

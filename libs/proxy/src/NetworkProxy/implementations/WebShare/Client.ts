@@ -5,11 +5,7 @@ import {
   HttpClientRequest,
   HttpClientResponse
 } from "@effect/platform"
-import {
-  RateLimited,
-  ServerError,
-  Unauthorized
-} from "../../errors/index.ts"
+import {RateLimited, ServerError, Unauthorized} from "../../errors/index.ts"
 import type {NetworkProxyError} from "../../errors/index.ts"
 import type {ProxyRequest} from "../../types/Proxy/ProxyRequest"
 import {WebShareConfig} from "./Config"
@@ -53,7 +49,10 @@ export class WebShareClient extends Context.Tag(
         const url = `${config.baseUrl}/api/v2/proxy/list/?${new URLSearchParams(params).toString()}`
 
         return HttpClientRequest.get(url).pipe(
-          HttpClientRequest.setHeader("Authorization", `Token ${config.apiToken}`),
+          HttpClientRequest.setHeader(
+            "Authorization",
+            `Token ${config.apiToken}`
+          ),
           http.execute,
           Effect.flatMap(response => {
             if (response.status === 200) {

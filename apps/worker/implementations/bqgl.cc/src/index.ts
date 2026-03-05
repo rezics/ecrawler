@@ -16,9 +16,6 @@ const Live = Layer.mergeAll(
   WebShareClient.layer,
   WebShare,
   WebShareConfig.layer
-).pipe(
-  Layer.provide(WorkerConfig.Default),
-  Layer.provide(NodeHttpClient.layer)
-)
+).pipe(Layer.provide(WorkerConfig.Default), Layer.provide(NodeHttpClient.layer))
 
 program.pipe(Effect.provide(Live), NodeRuntime.runMain)

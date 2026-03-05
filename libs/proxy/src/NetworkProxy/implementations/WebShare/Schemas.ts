@@ -16,11 +16,9 @@ export class WebShareProxy extends Schema.Class<WebShareProxy>("WebShareProxy")(
 
 export class WebShareProxyList extends Schema.Class<WebShareProxyList>(
   "WebShareProxyList"
-)(
-  {
-    count: Schema.Number,
-    next: Schema.NullOr(Schema.String),
-    previous: Schema.NullOr(Schema.String),
-    results: Schema.Array(WebShareProxy)
-  }
-) {}
+)({
+  count: Schema.Number,
+  next: Schema.NullOr(Schema.String),
+  previous: Schema.NullOr(Schema.String),
+  results: Schema.Array(WebShareProxy)
+}) {}

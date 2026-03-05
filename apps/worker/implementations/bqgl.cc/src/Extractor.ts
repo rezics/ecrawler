@@ -23,9 +23,10 @@ export const BQGLExtractor = Layer.scoped(
                 if (result.done) return null
                 return Effect.runPromise(result.value).then(proxy => {
                   if (!proxy) return null
-                  const auth = proxy.username && proxy.password
-                    ? `${proxy.username}:${proxy.password}@`
-                    : ""
+                  const auth =
+                    proxy.username && proxy.password
+                      ? `${proxy.username}:${proxy.password}@`
+                      : ""
                   return `${proxy.protocol}://${auth}${proxy.host}:${proxy.port}`
                 })
               }

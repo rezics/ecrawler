@@ -2,16 +2,10 @@
   "version": "8",
   "dialect": "postgres",
   "id": "40059c34-55eb-47da-8f5e-e49cf82c4adb",
-  "prevIds": [
-    "aa804bae-125d-471f-a34b-4165baff5901"
-  ],
+  "prevIds": ["aa804bae-125d-471f-a34b-4165baff5901"],
   "ddl": [
     {
-      "values": [
-        "pending",
-        "processing",
-        "completed"
-      ],
+      "values": ["pending", "processing", "completed"],
       "name": "task_status",
       "entityType": "enums",
       "schema": "public"
@@ -270,14 +264,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "task_id"
-      ],
+      "columns": ["task_id"],
       "schemaTo": "public",
       "tableTo": "tasks",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "results_task_id_tasks_id_fkey",
@@ -286,9 +276,7 @@
       "table": "results"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "results_pkey",
       "schema": "public",
@@ -296,9 +284,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "tasks_pkey",
       "schema": "public",
@@ -306,9 +292,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "data"
-      ],
+      "columns": ["data"],
       "nameExplicit": false,
       "name": "token_pkey",
       "schema": "public",

@@ -34,7 +34,9 @@ export const WebShare = Layer.effect(
   Effect.gen(function* () {
     const client = yield* WebShareClient
 
-    const makeIterator = (request: ProxyRequest = {}): Iterator<Effect.Effect<Proxy, NetworkProxyError>> => {
+    const makeIterator = (
+      request: ProxyRequest = {}
+    ): Iterator<Effect.Effect<Proxy, NetworkProxyError>> => {
       const stateRef = Ref.unsafeMake<PageState>(initialState())
 
       return {

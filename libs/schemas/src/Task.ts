@@ -6,9 +6,7 @@ export const Task = Schema.Struct({
   id: Schema.UUID.annotations({
     description: "Unique identifier for the task\n\n任务的唯一标识符"
   }),
-  status: TaskStatus.annotations({
-    description: "Task status\n\n任务状态"
-  }),
+  status: TaskStatus.annotations({description: "Task status\n\n任务状态"}),
   updated_at: Schema.Date.annotations({
     description:
       "Timestamp when the task was last updated\n\n任务最后更新的时间戳"
