@@ -14,11 +14,13 @@ import {
 const Live = Layer.mergeAll(
   BQGLExtractor,
   Scaler.EMA.pipe(Layer.provide(Scaler.EMAConfig.Default)),
-  Client.Default,
-  WebShareClient.layer,
-  WebShare,
-  WebShareConfig.layer
-).pipe(Layer.provide(WorkerConfig.Default), Layer.provide(NodeHttpClient.layer))
+  Client.Default
+).pipe(
+  Layer.provideMerge(WebShare),
+  Layer.provideMerge(WebShareClient.layer),
+  Layer.provideMerge(WebShareConfig.layer),
+  Layer.provide(WorkerConfig.Default),
+  Layer.provide(NodeHttpClient.layer)
+)
 
-// @ts-expect-error - Layer type inference workaround
 program.pipe(Effect.provide(Live), NodeRuntime.runMain)

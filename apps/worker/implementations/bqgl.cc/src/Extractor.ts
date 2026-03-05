@@ -101,7 +101,7 @@ export const BQGLExtractor = Layer.scoped(
                 )
 
                 yield* Queue.offerAll(linkQueue, links)
-              }).pipe(Effect.runPromise)
+              }).pipe(Runtime.runPromise(runtime))
           })
       ),
       crawler => Effect.promise(() => crawler.teardown())
