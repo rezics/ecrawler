@@ -5,9 +5,11 @@ import {WorkerConfig} from "@ecrawler/worker/services/WorkerConfig.ts"
 import {NodeHttpClient, NodeRuntime} from "@effect/platform-node"
 import {Effect, Layer} from "effect"
 import {BQGLExtractor} from "./Extractor.ts"
-import {WebShare} from "@ecrawler/proxy/NetworkProxy/implementations/WebShare/Layer.ts"
-import {WebShareConfig} from "@ecrawler/proxy/NetworkProxy/implementations/WebShare/Config.ts"
-import {WebShareClient} from "@ecrawler/proxy/NetworkProxy/implementations/WebShare/Client.ts"
+import {
+  WebShare,
+  WebShareConfig,
+  WebShareClient
+} from "@ecrawler/proxy-webshare"
 
 const Live = Layer.mergeAll(
   BQGLExtractor,
@@ -18,4 +20,5 @@ const Live = Layer.mergeAll(
   WebShareConfig.layer
 ).pipe(Layer.provide(WorkerConfig.Default), Layer.provide(NodeHttpClient.layer))
 
+// @ts-expect-error - Layer type inference workaround
 program.pipe(Effect.provide(Live), NodeRuntime.runMain)

@@ -1,3 +1,5 @@
 export {WebShare} from "./Layer"
+export {WebShareClient} from "./Client"
 export {WebShareConfig} from "./Config"
 export type {WebShareConfigShape} from "./Config"
+export type {WebShareClientShape} from "./Client"

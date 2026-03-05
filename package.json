@@ -6,10 +6,12 @@
   "workspaces": [
     "./apps/*",
     "./libs/*",
+    "./libs/proxy/implementations/*",
     "./tools/*"
   ],
   "scripts": {
     "prepare": "husky",
+    "readme": "yarn workspace @ecrawler/tool-readme run start",
     "update": "yarn workspace @ecrawler/tool-update run start",
     "format": "prettier --write ."
   },

@@ -115,7 +115,7 @@ available changes.
 **Archived to:** openspec/changes/archive/YYYY-MM-DD-<name>/
 **Specs:** ✓ Synced to main specs (or "No delta specs" or "Sync skipped")
 
-All artifacts complete. All tasks complete.
+NetworkProxyError artifacts complete. NetworkProxyError tasks complete.
 ```
 
 **Guardrails**

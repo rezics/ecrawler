@@ -126,7 +126,7 @@ Working on task 4/7: <task description>
 - [x] Task 2
 ...
 
-All tasks complete! Ready to archive this change.
+NetworkProxyError tasks complete! Ready to archive this change.
 ```
 
 **Output On Pause (Issue Encountered)**

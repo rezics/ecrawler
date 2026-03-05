@@ -4,6 +4,7 @@
     {"path": "./libs/schemas"},
     {"path": "./libs/kv"},
     {"path": "./libs/proxy"},
+    {"path": "./libs/proxy/implementations/WebShare"},
     {"path": "./libs/api"},
     {"path": "./apps/server"},
     {"path": "./apps/worker"},

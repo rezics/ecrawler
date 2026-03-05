@@ -5,23 +5,32 @@ import {
   HttpClientRequest,
   HttpClientResponse
 } from "@effect/platform"
-import {RateLimited, ServerError, Unauthorized} from "../../errors/index.ts"
-import type {NetworkProxyError} from "../../errors/index.ts"
-import type {ProxyRequest} from "../../types/Proxy/ProxyRequest"
+import {
+  RateLimited,
+  ServerError,
+  Unauthorized
+} from "../../src/NetworkProxyError"
+import type {All} from "../../src/NetworkProxyError"
+import type {ProxyRequest} from "../../src/NetworkProxy"
 import {WebShareConfig} from "./Config"
 import {WebShareProxyList} from "./Schemas"
 
-const mapError = (status: number, body: unknown): NetworkProxyError => {
+const mapError = (status: number, body: unknown): All => {
   if (status === 401) return new Unauthorized()
   if (status === 429) return new RateLimited()
   return new ServerError({cause: body})
 }
 
 export interface WebShareClientShape {
+  /**
+   * 获取代理列表
+   *
+   * 返回值包含 `count`（总数）和 `next`（下一页 URL，若为 `null` 则表示没有下一页）
+   */
   readonly list: (
     page: number,
     request: ProxyRequest
-  ) => Effect.Effect<typeof WebShareProxyList.Type, NetworkProxyError>
+  ) => Effect.Effect<typeof WebShareProxyList.Type, All>
 }
 
 export class WebShareClient extends Context.Tag(
@@ -36,7 +45,7 @@ export class WebShareClient extends Context.Tag(
       const list = (
         page: number,
         request: ProxyRequest
-      ): Effect.Effect<typeof WebShareProxyList.Type, NetworkProxyError> => {
+      ): Effect.Effect<typeof WebShareProxyList.Type, All> => {
         const params: Record<string, string> = {
           mode: "direct",
           page: String(page),
@@ -68,7 +77,7 @@ export class WebShareClient extends Context.Tag(
             )
           }),
           Effect.mapError(
-            (e): NetworkProxyError =>
+            (e): All =>
               e instanceof HttpClientError.RequestError ||
               e instanceof HttpClientError.ResponseError
                 ? new ServerError({cause: e})

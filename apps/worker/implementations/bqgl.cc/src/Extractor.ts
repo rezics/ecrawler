@@ -1,35 +1,38 @@
-import {Array, Effect, Layer, Option, pipe, Predicate, Queue} from "effect"
+import {
+  Array,
+  Effect,
+  Iterable,
+  Layer,
+  Option,
+  pipe,
+  Predicate,
+  Queue,
+  Runtime
+} from "effect"
 import {Extractor} from "@ecrawler/worker/services/Extractor.ts"
 import {Book, Link, Record} from "@ecrawler/schemas"
 import {CheerioCrawler, ProxyConfiguration} from "crawlee"
-import {NetworkProxy} from "@ecrawler/proxy/NetworkProxy"
+import {NetworkProxy, Proxy} from "@ecrawler/proxy"
 
 export const BQGLExtractor = Layer.scoped(
   Extractor,
   Effect.gen(function* () {
     const recordQueue = yield* Queue.unbounded<Record.Record>()
     const linkQueue = yield* Queue.unbounded<Link.Link>()
-    const networkProxy = yield* NetworkProxy
+    const proxy = yield* NetworkProxy.NetworkProxy
 
-    const proxyIterator = networkProxy[Symbol.iterator]()
+    const runtime = yield* Effect.runtime()
+    const proxies = proxy()
 
     const crawler = yield* Effect.acquireRelease(
       Effect.sync(
         () =>
           new CheerioCrawler({
             proxyConfiguration: new ProxyConfiguration({
-              newUrlFunction: () => {
-                const result = proxyIterator.next()
-                if (result.done) return null
-                return Effect.runPromise(result.value).then(proxy => {
-                  if (!proxy) return null
-                  const auth =
-                    proxy.username && proxy.password
-                      ? `${proxy.username}:${proxy.password}@`
-                      : ""
-                  return `${proxy.protocol}://${auth}${proxy.host}:${proxy.port}`
-                })
-              }
+              newUrlFunction: () =>
+                proxies[Symbol.iterator]()
+                  .next()
+                  .pipe(Runtime.runPromise(runtime), NetworkProxy.toProxyUrl)
             }),
             requestHandler: async ({$, request}) =>
               Effect.gen(function* () {

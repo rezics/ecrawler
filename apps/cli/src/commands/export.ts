@@ -25,9 +25,6 @@ export const Export = Command.make(
     id: Options.optional(
       Options.text("id").pipe(Options.withDescription("Filter by result ID"))
     ),
-    by: Options.optional(
-      Options.text("by").pipe(Options.withDescription("Filter by worker ID"))
-    ),
     since: Options.optional(
       Options.date("since").pipe(
         Options.withDescription("Filter results after this date")
@@ -49,7 +46,7 @@ export const Export = Command.make(
       )
     )
   },
-  ({collector, token, output, id, by, since, before, limit, offset}) =>
+  ({collector, token, output, id, since, before, limit, offset}) =>
     Effect.gen(function* () {
       const fs = yield* FileSystem.FileSystem
 
@@ -68,7 +65,6 @@ export const Export = Command.make(
       const result = yield* client.getResults({
         urlParams: {
           id: Option.getOrUndefined(id),
-          by: Option.getOrUndefined(by),
           since: Option.getOrUndefined(since),
           before: Option.getOrUndefined(before),
           limit: Option.getOrUndefined(limit),
@@ -76,7 +72,12 @@ export const Export = Command.make(
         }
       })
 
-      return yield* fs.writeFileString(output, JSON.stringify(result, null, 2))
+      const jsonString = yield* Effect.map(
+        Effect.sync(() => JSON.stringify(result, null, 2)),
+        s => s
+      )
+
+      return yield* fs.writeFileString(output, jsonString)
     })
 ).pipe(
   Command.withDescription(

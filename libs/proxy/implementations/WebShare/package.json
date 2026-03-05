@@ -1,0 +1,15 @@
+{
+  "name": "@ecrawler/proxy-webshare",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@ecrawler/proxy": "workspace:*",
+    "@effect/platform": "^0.94.5"
+  },
+  "devDependencies": {
+    "effect": "^3.19.17"
+  }
+}

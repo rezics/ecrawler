@@ -110,7 +110,7 @@ changes.
 **Archived to:** openspec/changes/archive/YYYY-MM-DD-<name>/
 **Specs:** ✓ Synced to main specs
 
-All artifacts complete. All tasks complete.
+NetworkProxyError artifacts complete. NetworkProxyError tasks complete.
 ```
 
 **Output On Success (No Delta Specs)**
@@ -123,7 +123,7 @@ All artifacts complete. All tasks complete.
 **Archived to:** openspec/changes/archive/YYYY-MM-DD-<name>/
 **Specs:** No delta specs
 
-All artifacts complete. All tasks complete.
+NetworkProxyError artifacts complete. NetworkProxyError tasks complete.
 ```
 
 **Output On Success With Warnings**

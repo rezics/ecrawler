@@ -1,4 +1,4 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["src", "src/NetworkProxy/errors/.ts"]
+  "include": ["src", "implementations", "src/NetworkProxy/errors/.ts"]
 }

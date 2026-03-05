@@ -1,5 +1,0 @@
-export * as Proxy from "./types/Proxy"
-export * from "./NetworkProxy"
-export * from "./errors/index.ts"
-export {WebShare, WebShareConfig} from "./implementations/WebShare/index.ts"
-export type {WebShareConfigShape} from "./implementations/WebShare/index.ts"

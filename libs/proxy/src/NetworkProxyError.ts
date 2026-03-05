@@ -20,10 +20,10 @@ export class Exhausted extends Schema.TaggedError<Exhausted>()(
   {}
 ) {}
 
-export const NetworkProxyError = Schema.Union(
+export const All = Schema.Union(
   Unauthorized,
   RateLimited,
   ServerError,
   Exhausted
 )
-export type NetworkProxyError = typeof NetworkProxyError.Type
+export type All = typeof All.Type

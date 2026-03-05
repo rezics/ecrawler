@@ -26,7 +26,8 @@
 - [x] 4.2 Replace `Client` in `apps/server/src/database/client.ts` with an
       Effect service that builds `drizzle(libsqlClient)` and exposes users and
       links tables (or typed helpers)
-- [x] 4.3 Update `apps/server/src/database/index.ts` exports if needed
+- [x] 4.3 Update `apps/server/src/database/NetworkProxyError.ts` exports if
+      needed
 
 ## 5. Wire and replace
 

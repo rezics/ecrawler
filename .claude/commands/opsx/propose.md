@@ -105,7 +105,7 @@ After completing all artifacts, summarize:
 
 - Change name and location
 - List of artifacts created with brief descriptions
-- What's ready: "All artifacts created! Ready for implementation."
+- What's ready: "NetworkProxyError artifacts created! Ready for implementation."
 - Prompt: "Run `/opsx:apply` to start implementing."
 
 **Artifact Creation Guidelines**

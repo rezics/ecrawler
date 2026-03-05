@@ -3,3 +3,5 @@
  * Import from "@ecrawler/proxy/NetworkProxy" for types, layers, and errors.
  */
 export * as NetworkProxy from "./NetworkProxy"
+export * as NetworkProxyError from "./NetworkProxyError"
+export * as Proxy from "./NetworkProxy"

@@ -462,6 +462,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@ecrawler/cli@workspace:apps/cli"
   dependencies:
+    "@ecrawler/api": "workspace:*"
     "@effect/cli": "npm:^0.73.2"
     "@effect/printer": "npm:^0.47.0"
     "@effect/printer-ansi": "npm:^0.47.0"
@@ -473,6 +474,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@ecrawler/implementation-bqgl.cc@workspace:apps/worker/implementations/bqgl.cc"
   dependencies:
+    "@ecrawler/proxy": "workspace:*"
     "@ecrawler/schemas": "workspace:*"
     "@ecrawler/worker": "workspace:*"
     crawlee: "npm:^3.16.0"
@@ -491,7 +493,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@ecrawler/proxy@workspace:libs/proxy":
+"@ecrawler/proxy-webshare@workspace:libs/proxy/implementations/WebShare":
+  version: 0.0.0-use.local
+  resolution: "@ecrawler/proxy-webshare@workspace:libs/proxy/implementations/WebShare"
+  dependencies:
+    "@ecrawler/proxy": "workspace:*"
+    "@effect/platform": "npm:^0.94.5"
+    effect: "npm:^3.19.17"
+  languageName: unknown
+  linkType: soft
+
+"@ecrawler/proxy@workspace:*, @ecrawler/proxy@workspace:libs/proxy":
   version: 0.0.0-use.local
   resolution: "@ecrawler/proxy@workspace:libs/proxy"
   languageName: unknown
@@ -513,12 +525,6 @@ __metadata:
     drizzle-kit: "npm:beta"
     drizzle-orm: "npm:beta"
     postgres: "npm:^3.4.8"
-  languageName: unknown
-  linkType: soft
-
-"@ecrawler/tool-readme@workspace:tools/readme":
-  version: 0.0.0-use.local
-  resolution: "@ecrawler/tool-readme@workspace:tools/readme"
   languageName: unknown
   linkType: soft
 

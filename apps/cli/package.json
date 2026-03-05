@@ -1,10 +1,12 @@
 {
   "name": "@ecrawler/cli",
-  "version": "0.1.0",
+  "version": "0.1.2",
+  "type": "module",
   "scripts": {
     "start": "yarn run -T tsx ./src/main.ts"
   },
   "dependencies": {
+    "@ecrawler/api": "workspace:*",
     "@effect/cli": "^0.73.2",
     "@effect/printer": "^0.47.0",
     "@effect/printer-ansi": "^0.47.0",
