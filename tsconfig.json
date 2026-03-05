@@ -2,7 +2,6 @@
   "files": [],
   "references": [
     {"path": "./libs/schemas"},
-    {"path": "./libs/core"},
     {"path": "./libs/kv"},
     {"path": "./libs/proxy"},
     {"path": "./libs/api"},

@@ -1,6 +1,5 @@
-export {Proxy} from "./schema/index.js"
-export {WebshareConfig} from "./webshare/Config.js"
-export {WebshareClient} from "./webshare/Client.js"
-export {ProxyPool} from "./pool/Pool.js"
-export {toUrl} from "./pool/util.js"
-export {WebshareApiError, ProxyPoolEmptyError} from "./errors.js"
+/**
+ * Unified network proxy client for the Worker. No dependency on Task, Server, or database.
+ * Import from "@ecrawler/proxy/NetworkProxy" for types, layers, and errors.
+ */
+export * as NetworkProxy from "./NetworkProxy"

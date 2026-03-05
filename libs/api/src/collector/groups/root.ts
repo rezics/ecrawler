@@ -1,18 +1,21 @@
-import {Auth} from "@ecrawler/core/api/auth.ts"
-import {Result} from "@ecrawler/schemas"
+import {Auth} from "../../middlewares/Auth.ts"
+import {UnknownError} from "../../error.ts"
 import {HttpApiEndpoint, HttpApiGroup, OpenApi} from "@effect/platform"
 import {Schema} from "effect"
 import {ResultApi} from "../../schemas/Result.ts"
+import {MaxBodySize} from "../../middlewares/MaxBodySize.ts"
 
 const {ResultNotFoundError, QueryParams, CreatePayload, UpdatePayload} =
   ResultApi
 
 export default HttpApiGroup.make("collector")
   .middleware(Auth)
+  .middleware(MaxBodySize)
   .annotate(
     OpenApi.Description,
     "Operations related to collecting and managing crawl results\n\n与收集和管理抓取结果相关的操作"
   )
+  .addError(UnknownError)
   .add(
     HttpApiEndpoint.post("createResult")`/results`
       .setPayload(CreatePayload)
@@ -26,7 +29,7 @@ export default HttpApiGroup.make("collector")
   .add(
     HttpApiEndpoint.get("getResults")`/results`
       .setUrlParams(QueryParams)
-      .addSuccess(Schema.Array(Result.Api.pipe(Schema.omit("data"))))
+      .addSuccess(Schema.Array(ResultApi.ApiInputWithoutData))
       // .addError(ResultNotFoundError)
       .annotate(OpenApi.Summary, "List results")
       .annotate(

@@ -1,6 +1,6 @@
 import {HttpApi, OpenApi} from "@effect/platform"
 import root from "./groups/root.ts"
-// import util from "@ecrawler/core/api/util.ts"
+// import util from "@ecrawler/server/api/util.ts"
 
 export const Collector = HttpApi.make("Collector")
   // .add(util)

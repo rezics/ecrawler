@@ -7,7 +7,6 @@
     "./*": "./src/*"
   },
   "dependencies": {
-    "@ecrawler/core": "workspace:*",
     "@ecrawler/schemas": "workspace:*"
   }
 }

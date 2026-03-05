@@ -1,8 +1,9 @@
 import {defineConfig} from "drizzle-kit"
 
 export default defineConfig({
-  dialect: "turso",
-  schema: "./schema.ts",
+  dialect: "postgresql",
+  schema: "./schemas/index.ts",
   out: "./migrations",
-  dbCredentials: {url: process.env.DATABASE_URL ?? "file:./local.db"}
+  driver: "pglite",
+  dbCredentials: {url: "memory://"}
 })

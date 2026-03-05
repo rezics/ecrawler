@@ -47,7 +47,7 @@ export class Client extends Effect.Tag("Client")<
 
       yield* Effect.gen(function* () {
         const task = yield* dispatcherClient.dispatcher.nextTask({
-          payload: {by: config.id},
+          payload: {},
           urlParams: {tags, timeout: pollTimeout}
         })
         yield* Queue.offer(taskQueue, task)
@@ -69,7 +69,6 @@ export class Client extends Effect.Tag("Client")<
               Iterable.map(result.records, data =>
                 collectorClient.collector.createResult({
                   payload: {
-                    by: config.id,
                     tags,
                     link: firstLink.toString(),
                     data

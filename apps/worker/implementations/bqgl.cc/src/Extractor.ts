@@ -1,18 +1,35 @@
 import {Array, Effect, Layer, Option, pipe, Predicate, Queue} from "effect"
 import {Extractor} from "@ecrawler/worker/services/Extractor.ts"
 import {Book, Link, Record} from "@ecrawler/schemas"
-import {CheerioCrawler} from "crawlee"
+import {CheerioCrawler, ProxyConfiguration} from "crawlee"
+import {NetworkProxy} from "@ecrawler/proxy/NetworkProxy"
 
 export const BQGLExtractor = Layer.scoped(
   Extractor,
   Effect.gen(function* () {
     const recordQueue = yield* Queue.unbounded<Record.Record>()
     const linkQueue = yield* Queue.unbounded<Link.Link>()
+    const networkProxy = yield* NetworkProxy
+
+    const proxyIterator = networkProxy[Symbol.iterator]()
 
     const crawler = yield* Effect.acquireRelease(
       Effect.sync(
         () =>
           new CheerioCrawler({
+            proxyConfiguration: new ProxyConfiguration({
+              newUrlFunction: () => {
+                const result = proxyIterator.next()
+                if (result.done) return null
+                return Effect.runPromise(result.value).then(proxy => {
+                  if (!proxy) return null
+                  const auth = proxy.username && proxy.password
+                    ? `${proxy.username}:${proxy.password}@`
+                    : ""
+                  return `${proxy.protocol}://${auth}${proxy.host}:${proxy.port}`
+                })
+              }
+            }),
             requestHandler: async ({$, request}) =>
               Effect.gen(function* () {
                 const dirid = yield* Option.fromNullable(

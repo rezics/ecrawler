@@ -10,9 +10,6 @@ export const QueryParams = Schema.Struct({
   id: Schema.UUID.annotations({
     description: "Filter by result ID\n\n按结果 ID 筛选"
   }),
-  by: Schema.UUID.annotations({
-    description: "Filter by worker ID\n\n按工作节点 ID 筛选"
-  }),
   tags: Schema.String.pipe(Schema.Array).annotations({
     description:
       "Filter by tags (all tags must match)\n\n按标签筛选（必须匹配所有标签）"
@@ -43,30 +40,30 @@ export const QueryParams = Schema.Struct({
   .pipe(Schema.partial)
 
 export const CreatePayload = Schema.Struct({
-  by: Schema.UUID.annotations({
-    description: "Worker ID that produced the result\n\n产生结果的工作节点 ID"
-  }),
   tags: Schema.String.pipe(Schema.Array).annotations({
     description: "Tags for the new result\n\n新结果的标签"
   }),
   link: Schema.String.annotations({description: "The task link\n\n任务链接"}),
-  data: Schema.Any.annotations({description: "The result data\n\n结果数据"})
+  meta: Schema.optional(Schema.Unknown).annotations({
+    description: "Arbitrary metadata\n\n任意元数据"
+  }),
+  data: Schema.Unknown.annotations({description: "The result data\n\n结果数据"})
 }).annotations({
   identifier: "CreateResultPayload",
   description: "Payload for creating a new result\n\n创建新结果的载荷"
 })
 
 export const UpdatePayload = Schema.Struct({
-  by: Schema.UUID.annotations({
-    description: "Worker ID that produced the result\n\n产生结果的工作节点 ID"
-  }),
   tags: Schema.String.pipe(Schema.Array).annotations({
     description: "New tags for the result\n\n结果的新标签"
   }),
   link: Schema.String.annotations({
     description: "New task link\n\n新的任务链接"
   }),
-  data: Schema.Any.annotations({
+  meta: Schema.optional(Schema.Unknown).annotations({
+    description: "Arbitrary metadata\n\n任意元数据"
+  }),
+  data: Schema.Unknown.annotations({
     description: "New data for the result\n\n结果的新数据"
   })
 })
@@ -76,10 +73,10 @@ export const UpdatePayload = Schema.Struct({
   })
   .pipe(Schema.partial)
 
-export const ApiInput = Result.Result
-export type ApiInput = Result.Result
+export const ApiInput = Result.Api
+export type ApiInput = typeof Result.Api.Type
 
-export const ApiInputWithoutData = Result.Result.pipe(Schema.omit("data"))
+export const ApiInputWithoutData = Result.Api.pipe(Schema.omit("data"))
 export type ApiInputWithoutData = typeof ApiInputWithoutData.Type
 
 export const ResultApi = {

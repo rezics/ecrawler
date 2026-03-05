@@ -14,16 +14,15 @@
   },
   "dependencies": {
     "@ecrawler/api": "workspace:*",
-    "@ecrawler/core": "workspace:*",
     "@ecrawler/schemas": "workspace:*",
-    "@libsql/client": "^0.14.0",
-    "drizzle-kit": "~0.31.9",
-    "drizzle-orm": "^0.36.0",
-    "lmdb": "^3.5.1",
-    "postgres": "^3.4.8",
-    "unstorage": "^1.17.4"
+    "drizzle-kit": "beta",
+    "drizzle-orm": "beta",
+    "postgres": "^3.4.8"
   },
   "exports": {
     "./*": "./src/*"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.3.15"
   }
 }

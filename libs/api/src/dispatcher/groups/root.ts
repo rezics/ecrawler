@@ -1,9 +1,9 @@
-import {Task} from "@ecrawler/schemas"
 import {HttpApiEndpoint, HttpApiGroup, OpenApi} from "@effect/platform"
 import {Schema} from "effect"
-import {UnknownError} from "@ecrawler/core/api/error.ts"
-import {Auth} from "@ecrawler/core/api/auth.ts"
+import {Auth} from "../../middlewares/Auth.ts"
+import {UnknownError} from "../../error.ts"
 import {TaskApi} from "../../schemas/Task.ts"
+import {MaxBodySize} from "../../middlewares/MaxBodySize.ts"
 
 const {
   TaskNotFoundError,
@@ -16,6 +16,7 @@ const {
 
 export default HttpApiGroup.make("dispatcher")
   .middleware(Auth)
+  .middleware(MaxBodySize)
   .annotate(
     OpenApi.Description,
     "Operations related to task dispatching and queue management\n\n与任务调度和队列管理相关的操作"
@@ -34,7 +35,7 @@ export default HttpApiGroup.make("dispatcher")
   .add(
     HttpApiEndpoint.get("getTasks")`/tasks`
       .setUrlParams(QueryParams)
-      .addSuccess(Schema.Array(Task.Task))
+      .addSuccess(Schema.Array(TaskApi.ApiInput))
       .addError(TaskNotFoundError)
       .annotate(OpenApi.Summary, "List tasks")
       .annotate(
@@ -46,7 +47,7 @@ export default HttpApiGroup.make("dispatcher")
     HttpApiEndpoint.patch("updateTask")`/tasks/:id`
       .setPath(Schema.Struct({id: Schema.UUID}))
       .setPayload(UpdatePayload)
-      .addSuccess(Task.Task)
+      .addSuccess(TaskApi.ApiInput)
       .addError(TaskNotFoundError)
       .annotate(OpenApi.Summary, "Update a task")
       .annotate(
@@ -69,7 +70,7 @@ export default HttpApiGroup.make("dispatcher")
     HttpApiEndpoint.post("nextTask")`/tasks/next`
       .setPayload(NextPayload)
       .setUrlParams(NextQueryParams)
-      .addSuccess(Task.Task)
+      .addSuccess(TaskApi.ApiInput)
       .addError(TaskNotFoundError)
       .annotate(OpenApi.Summary, "Get next task")
       .annotate(

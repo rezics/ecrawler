@@ -6,6 +6,7 @@
     "./*": "./src/*"
   },
   "dependencies": {
+    "@ecrawler/proxy": "workspace:*",
     "@ecrawler/schemas": "workspace:*",
     "@ecrawler/worker": "workspace:*",
     "crawlee": "^3.16.0",

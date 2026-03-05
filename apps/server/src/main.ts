@@ -1,10 +1,13 @@
 import "dotenv/config"
 import {Effect, Layer} from "effect"
-import api from "./api/index.ts"
-import {Database} from "./database/client.ts"
-import {NodeRuntime} from "@effect/platform-node"
+import Api from "./api/index.ts"
+import {Database} from "./database/index.ts"
+import {NodeContext, NodeRuntime} from "@effect/platform-node"
 
-const ApiLayer = api.pipe(Layer.provide(Database.Default))
+const ApiLayer = Api.pipe(
+  Layer.provide(Database.layer),
+  Layer.provide(NodeContext.layer)
+)
 
 const program = Effect.gen(function* () {
   yield* Effect.log("Starting Server...")
