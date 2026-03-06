@@ -69,6 +69,8 @@
 
 在开始之前，确保你已经安装了 **Node.js** 和 **Yarn v4**。
 
+详细的部署和运行说明请参考 **[部署与运行指南](./docs/DEPLOYMENT.md)**。
+
 ### 1. 初始化项目
 
 克隆项目后，在根目录下运行：
@@ -82,19 +84,34 @@ yarn install
 
 各个主应用都提供了启动脚本：
 
-- **启动 Server**: 需要配置好数据库并初始化，通常可以先运行
-  `yarn workspace @ecrawler/server run dev` 进行开发模式启动。
-- **启动 Worker**: 运行 `yarn workspace @ecrawler/worker run dev`
-  启动一个工作节点，它会向服务端请求任务进行执行。
-- **运行 CLI**: 运行 `yarn workspace @ecrawler/cli run start --help`
-  查看可用的命令行指令。
+- **启动 Server**: `yarn workspace @ecrawler/server run dev`
+- **启动 Worker**: `yarn workspace @ecrawler/worker run dev`
+- **运行 CLI**: `yarn workspace @ecrawler/cli run start --help`
 
-_注：Server 可能需要连接数据库，请检查 `apps/server/.env.development` 及
-`tools/database/compose.yaml` 确认如何启动本地数据库容器。_
+### 3. 使用 CLI 导入任务
+
+```bash
+# 导入任务
+yarn workspace @ecrawler/cli run start import \
+  http://localhost:2333 \
+  --token your-secret-key \
+  --input tasks.json
+
+# 导出结果
+yarn workspace @ecrawler/cli run start export \
+  http://localhost:2334 \
+  --token your-secret-key \
+  --output results.json
+```
+
+> 💡 **提示**: 完整的配置说明和运行原理请查看
+> [部署与运行指南](./docs/DEPLOYMENT.md)
 
 ---
 
 ## 开发流程指南
+
+详细的开发指南请参考 [文档目录](./docs/INDEX.md)。
 
 ### 如何新增一个站点的爬虫逻辑？
 
@@ -106,6 +123,9 @@ _注：Server 可能需要连接数据库，请检查 `apps/server/.env.developm
     `qidian`），并实现针对该网站特定的抓取和解析逻辑。
 4.  应用所使用的数据结构（如书籍信息、章节列表）应当从 `libs/schemas`
     中导入，以保证向后传递给 Server 的数据格式规范。
+
+> 💡 **提示**: 详细的实现指南请查看
+> [Extractor 实现指南](./docs/EXTRACTOR_IMPLEMENTATION.md)
 
 ### 如何修改数据库结构？
 
@@ -132,3 +152,12 @@ _注：Server 可能需要连接数据库，请检查 `apps/server/.env.developm
 `Effect.gen(function* () { ... })` 或者管道操作符 `pipe`
 为特征）。如果你对其感到有些陌生，建议先阅读 Effect 的入门教程，理解基础的"管道(Pipeline)"操作，以及如何在其中进行并发 (`Queue`,
 `Chunk`) 处理和上下文 (`Layer`) 注入。
+
+---
+
+## 📚 文档导航
+
+- **[部署与运行指南](./docs/DEPLOYMENT.md)** - 新手必读，包含系统架构和运行原理
+- **[文档目录](./docs/INDEX.md)** - 完整的文档索引和导航
+- **[Extractor 实现指南](./docs/EXTRACTOR_IMPLEMENTATION.md)** - 如何添加新网站支持
+- **[系统架构设计](./docs/ARCHITECTURE.md)** - 深入理解系统设计

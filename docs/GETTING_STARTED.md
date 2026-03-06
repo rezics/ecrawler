@@ -1,17 +1,19 @@
 # 快速开始指南
 
+> 💡 **提示**: 如果你需要了解系统的部署、配置和运行原理，请先阅读
+> **[部署与运行指南](./DEPLOYMENT.md)**。
+
 ## 前置要求
 
 - **Node.js**: >= 18 (推荐 20+)
 - **Yarn**: v4.12.0+
-- **PostgreSQL**: 13+ (本地安装或云托管)
+- **PostgreSQL**: 13+ (本地安装或云托管，可选)
 
 检查版本：
 
 ```bash
 node --version      # v20.x 或更高
 yarn --version      # 4.x
-psql --version      # PostgreSQL 13+
 ```
 
 ## 项目初始化
@@ -41,138 +43,45 @@ ls -la apps/server/dist/  # 检查是否有构建输出
 
 ## 数据库设置
 
-### 方式 1: 本地 PostgreSQL（推荐）
+> 💡 默认使用
+> **PGlite**（嵌入式 PostgreSQL），无需额外配置。如需使用外部 PostgreSQL，请参考
+> [部署与运行指南](./DEPLOYMENT.md)。
+
+### 使用 PGlite（默认，推荐新手）
+
+无需任何配置，Server 首次运行时会自动初始化本地数据库。
+
+### 使用外部 PostgreSQL
 
 ```bash
-# 安装 PostgreSQL（如果尚未安装）
-# Ubuntu/Debian
-sudo apt-get install postgresql postgresql-contrib
-
-# macOS
-brew install postgresql
-
-# 启动服务
-sudo systemctl start postgresql  # Linux
-brew services start postgresql    # macOS
-
-# 创建数据库和用户（仅首次）
-sudo -u postgres createdb ecrawler
-sudo -u postgres createuser -P ecrawler_user  # 输入密码
-
-# 配置连接字符串
-export DATABASE_URL="postgresql://ecrawler_user:password@localhost:5432/ecrawler"
-```
-
-### 方式 2: 云数据库
-
-在云提供商（AWS RDS、阿里云 RDS 等）创建 PostgreSQL 实例，然后更新连接字符串：
-
-```bash
-export DATABASE_URL="postgresql://user:password@host:5432/ecrawler"
+# 设置数据库连接
+export DATABASE_URL="postgresql://user:password@localhost:5432/ecrawler"
 ```
 
 ## 环境配置
 
-### 1. 创建 `.env` 文件
+> 💡 完整的配置说明请参考 [部署与运行指南](./DEPLOYMENT.md#配置详解)
 
-在项目根目录创建 `.env` 文件（参考 `.env.example` 如果存在）：
-
-```bash
-# 数据库
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ecrawler"
-
-# 服务器
-SERVER_PORT=3000
-SERVER_HOST=0.0.0.0
-
-# Worker
-WORKER_PORT=3001
-WORKER_TIMEOUT=60000
-
-# 日志
-LOG_LEVEL=debug
-
-# 代理（可选）
-PROXY_ENABLED=false
-PROXY_LIST="http://proxy1.com:8080,http://proxy2.com:8080"
-```
-
-### 2. 针对每个应用的 `.env.development`
+### Server 配置
 
 ```bash
-# apps/server/.env.development
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ecrawler"
-PORT=3000
-NODE_ENV=development
-
-# apps/worker/.env.development
-WORKER_ID="worker-1"
-SERVER_URL="http://localhost:3000"
-NODE_ENV=development
+# 创建 apps/server/.env.development
+cat > apps/server/.env.development << 'EOF'
+HOST=0.0.0.0
+PORT=2333
+SECRET_KEY=dev-secret-key
+EOF
 ```
 
-## 数据库迁移
-
-### 初始化数据库架构
+### Worker 配置
 
 ```bash
-# 生成迁移文件
-yarn workspace @ecrawler/server run generate
-
-# 应用迁移到数据库
-yarn workspace @ecrawler/server run migrate
-```
-
-检查迁移是否成功：
-
-```bash
-# 连接到数据库查看表
-psql -h localhost -U postgres -d ecrawler -c "\dt"
-```
-
-## 启动应用
-
-### 开发模式
-
-在三个不同的终端中运行：
-
-#### 终端 1: 启动 Server
-
-```bash
-yarn workspace @ecrawler/server run dev
-```
-
-输出示例：
-
-```
-[Server] 服务器已启动: http://localhost:3000
-[Server] API 文档: http://localhost:3000/api/docs
-```
-
-#### 终端 2: 启动 Worker
-
-```bash
-yarn workspace @ecrawler/worker run dev
-```
-
-输出示例：
-
-```
-[Worker] Worker 已连接到服务器
-[Worker] 等待任务...
-```
-
-#### 终端 3: 运行 CLI
-
-```bash
-# 查看可用命令
-yarn workspace @ecrawler/cli run start --help
-
-# 创建爬取任务
-yarn workspace @ecrawler/cli run start import --url "https://example.com/book"
-
-# 导出结果
-yarn workspace @ecrawler/cli run start export --format json > books.json
+# 创建 apps/worker/.env.development
+cat > apps/worker/.env.development << 'EOF'
+BASE_URL=http://localhost:2333
+SECRET_KEY=dev-secret-key
+EXTRACTORS=@ecrawler/extractor-dummy/data.ts
+EOF
 ```
 
 ## 常用开发命令
@@ -197,25 +106,42 @@ yarn build
 yarn workspace @ecrawler/server run build
 ```
 
-### 运行测试（如果有）
-
-```bash
-# 运行所有测试
-yarn test
-
-# 运行特定工作区的测试
-yarn workspace @ecrawler/worker run test
-```
-
 ### 查看工作区列表
 
 ```bash
 yarn workspaces list
 ```
 
-## 验证安装是否成功
+## 启动应用
 
-### 检查清单
+在两个不同的终端中运行：
+
+#### 终端 1: 启动 Server
+
+```bash
+yarn workspace @ecrawler/server run dev
+```
+
+#### 终端 2: 启动 Worker
+
+```bash
+yarn workspace @ecrawler/worker run dev
+```
+
+#### 终端 3: 使用 CLI
+
+```bash
+# 查看帮助
+yarn workspace @ecrawler/cli run start --help
+
+# 导入任务
+yarn workspace @ecrawler/cli run start import \
+  http://localhost:2333 \
+  --token dev-secret-key \
+  --input tasks.json
+```
+
+## 验证安装是否成功
 
 ```bash
 # 1. 依赖安装完整
@@ -224,124 +150,21 @@ yarn workspaces list
 # 2. TypeScript 编译无错误
 yarn tsc --noEmit
 
-# 3. 数据库连接正常
-psql $DATABASE_URL -c "SELECT version();"
-
-# 4. Server 可启动
-timeout 5 yarn workspace @ecrawler/server run dev || echo "✓ Server 启动成功"
-
-# 5. CLI 可运行
-yarn workspace @ecrawler/cli run start --help
-```
-
-## 常见问题排查
-
-### 问题 1: `Module not found`
-
-**症状**: 启动时报错 `Cannot find module '@ecrawler/xxx'`
-
-**解决**:
-
-```bash
-# 重新安装依赖
-rm -rf node_modules
-yarn install
-
-# 如果问题持续，清除 Yarn 缓存
-yarn cache clean
-yarn install
-```
-
-### 问题 2: 数据库连接失败
-
-**症状**: `Error: connect ECONNREFUSED 127.0.0.1:5432`
-
-**解决**:
-
-```bash
-# 检查 PostgreSQL 是否运行
-sudo systemctl status postgresql  # Linux
-brew services list | grep postgres  # macOS
-
-# 如果未运行，启动它
-sudo systemctl start postgresql  # Linux
-brew services start postgresql    # macOS
-
-# 检查连接字符串
-echo $DATABASE_URL
-
-# 测试连接
-psql $DATABASE_URL -c "SELECT version();"
-```
-
-### 问题 3: TypeScript 编译错误
-
-**症状**: `Type error TS2307: Cannot find module`
-
-**解决**:
-
-```bash
-# 重建类型定义
-yarn tsc --noEmit
-
-# 检查 tsconfig.json 中的路径映射
-cat tsconfig.base.json | grep -A 10 "paths"
-```
-
-### 问题 4: Worker 连接失败
-
-**症状**: `Error: Failed to connect to server at http://localhost:3000`
-
-**解决**:
-
-1. 确保 Server 正在运行（终端 1）
-2. 检查端口是否被占用: `lsof -i :3000`
-3. 更新 `SERVER_URL` 环境变量
-
-### 问题 5: 代理或网络错误
-
-**症状**: 爬虫任务失败，超时
-
-**解决**:
-
-```bash
-# 禁用代理
-PROXY_ENABLED=false yarn workspace @ecrawler/worker run dev
-
-# 增加超时时间
-WORKER_TIMEOUT=120000 yarn workspace @ecrawler/worker run dev
+# 3. Server 可启动
+yarn workspace @ecrawler/server run dev &
+sleep 3 && curl http://localhost:2333/tasks && kill %1
 ```
 
 ## 下一步
 
-- [架构设计](./ARCHITECTURE.md) - 理解系统整体设计
-- [Extractor 实现指南](./EXTRACTOR_IMPLEMENTATION.md) - 学习如何添加新网站支持
-- [API 文档](./API.md) - 查看可用的 API
-- [Effect 入门](https://effect.website/docs/getting-started) - 学习 Effect 框架
-
-## 有用的链接
-
-- [项目仓库](https://github.com/rezics/ecrawler)
-- [PostgreSQL 文档](https://www.postgresql.org/docs/)
-- [Yarn 工作区](https://yarnpkg.com/features/workspaces)
-- [Crawlee 文档](https://crawlee.dev/)
-- [Effect 官方文档](https://effect.website/)
-- [Drizzle ORM 文档](https://orm.drizzle.team/)
+- **[部署与运行指南](./DEPLOYMENT.md)** - 了解系统架构和运行原理
+- **[Extractor 实现指南](./EXTRACTOR_IMPLEMENTATION.md)** - 学习如何添加新网站支持
+- **[系统架构设计](./ARCHITECTURE.md)** - 深入理解系统设计
 
 ## 获取帮助
 
 如果遇到问题：
 
-1. 查看 [常见问题](#常见问题排查) 部分
+1. 查看 [部署与运行指南](./DEPLOYMENT.md) 中的"故障排查"章节
 2. 检查项目 Issues: https://github.com/rezics/ecrawler/issues
-3. 查看日志输出，使用 `LOG_LEVEL=debug` 获取更详细的信息
-4. 在项目讨论区提问
-
----
-
-**快速链接**:
-
-- `yarn install` - 安装依赖
-- `sudo systemctl start postgresql` - 启动数据库（Linux）
-- `yarn workspace @ecrawler/server run dev` - 启动服务器
-- `yarn format` - 格式化代码
+3. 使用 `LOG_LEVEL=debug` 获取更详细的日志信息

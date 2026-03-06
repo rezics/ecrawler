@@ -1,833 +1,808 @@
-# 部署指南
+# 部署与运行指南
 
-本文档介绍如何将 ecrawler 项目部署到生产环境，包括本地部署、Docker 容器化部署和云平台部署。
+本文档面向**完全没有接触过项目代码**的用户，详细介绍 ecrawler 系统的部署、配置和运行方法。
 
 ## 目录
 
-- [部署前置条件](#部署前置条件)
-- [本地生产部署](#本地生产部署)
-- [Docker 容器化部署](#docker-容器化部署)
-- [云平台部署](#云平台部署)
-- [性能优化](#性能优化)
-- [监控和日志](#监控和日志)
+- [系统概述](#系统概述)
+- [核心概念](#核心概念)
+- [部署方式](#部署方式)
+- [配置详解](#配置详解)
+- [运行与使用](#运行与使用)
 - [故障排查](#故障排查)
 
-## 部署前置条件
+---
 
-### 系统要求
+## 系统概述
 
-- **操作系统**: Linux（推荐 Ubuntu 20.04+ 或 CentOS 7+）
-- **Node.js**: >= 18（推荐 20+）
-- **Yarn**: v4.12.0+
-- **PostgreSQL**: 13+（可选，云托管、自建或使用内置 PGlite）
-- **内存**: 最低 2GB（推荐 4GB+）
-- **磁盘空间**: 最低 5GB
+### ecrawler 是什么？
 
-### 依赖检查
+ecrawler 是一个**分布式网页爬虫系统**，用于从多个网站批量抓取结构化数据（如小说网站的书目信息）。系统采用
+**Server-Worker 架构**，支持多节点并行爬取。
+
+### 三大核心组件
+
+| 组件       | 作用                                   | 端口                                |
+| ---------- | -------------------------------------- | ----------------------------------- |
+| **Server** | 中央控制节点，管理任务队列和结果存储   | 2333 (Dispatcher), 2334 (Collector) |
+| **Worker** | 爬取执行节点，从 Server 领取任务并执行 | 无固定端口                          |
+| **CLI**    | 命令行工具，用于导入任务和导出结果     | -                                   |
+
+### 系统架构图
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                              用户操作                                    │
+│                     (CLI 命令行工具)                                     │
+└─────────────────────────────┬───────────────────────────────────────────┘
+                              │
+                              │ 1. 导入任务 (import)
+                              │ 4. 导出结果 (export)
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           Server (服务端)                               │
+│  ┌─────────────────────────┐    ┌─────────────────────────┐            │
+│  │     Dispatcher API      │    │     Collector API       │            │
+│  │     (端口: 2333)        │    │     (端口: 2334)        │            │
+│  │                         │    │                         │            │
+│  │  • 创建/删除任务        │    │  • 接收爬取结果         │            │
+│  │  • 分发任务给 Worker    │    │  • 存储到数据库         │            │
+│  │  • 查询任务状态         │    │  • 查询历史结果         │            │
+│  └───────────┬─────────────┘    └───────────┬─────────────┘            │
+│              │                              │                          │
+│              └──────────────┬───────────────┘                          │
+│                             ▼                                          │
+│              ┌────────────────────────────┐                            │
+│              │      PostgreSQL 数据库      │                           │
+│              │                            │                            │
+│              │  • tasks 表 (任务队列)      │                           │
+│              │  • results 表 (爬取结果)    │                           │
+│              │  • token 表 (认证令牌)      │                           │
+│              └────────────────────────────┘                            │
+└─────────────────────────────────────────────────────────────────────────┘
+                              │
+                              │ 2. Worker 请求任务
+                              │ 3. Worker 提交结果
+                              ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         Worker (工作节点)                               │
+│                                                                         │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │                        主循环 (Main Loop)                         │  │
+│  │                                                                  │  │
+│  │   ┌─────────┐    ┌─────────────┐    ┌─────────────┐             │  │
+│  │   │ 从队列  │ -> │ 执行爬取    │ -> │ 提交结果    │             │  │
+│  │   │ 取任务  │    │ (Extractor) │    │ 到 Server   │             │  │
+│  │   └─────────┘    └─────────────┘    └─────────────┘             │  │
+│  │        ▲                                   │                     │  │
+│  │        │        发现新链接                 │                     │  │
+│  │        └───────────────────────────────────┘                     │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+│                                                                         │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │                    Extractor (爬虫实现)                          │  │
+│  │                                                                  │  │
+│  │   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │  │
+│  │   │ bqgl.cc    │  │ qidian      │  │ new-site    │  ...        │  │
+│  │   │ (笔趣阁)   │  │ (起点中文网)│  │ (自定义网站)│             │  │
+│  │   └─────────────┘  └─────────────┘  └─────────────┘             │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 核心概念
+
+### 1. 任务 (Task)
+
+任务是爬虫系统的基本工作单元，包含：
+
+```json
+{
+  "id": "uuid-v7-format",
+  "link": "https://example.com/book/123",
+  "tags": ["novel", "bqgl"],
+  "status": "pending",
+  "created_at": "2026-03-06T10:00:00Z"
+}
+```
+
+- **link**: 要爬取的网页 URL
+- **tags**: 任务标签，用于 Worker 筛选可处理的任务
+- **status**: `pending` → `processing` → `completed`
+
+### 2. 结果 (Result)
+
+Worker 爬取完成后提交的数据：
+
+```json
+{
+  "id": "uuid",
+  "link": "https://example.com/book/123",
+  "tags": ["novel", "bqgl"],
+  "data": {
+    "title": "书名",
+    "authors": ["作者"],
+    "chapters": [...]
+  }
+}
+```
+
+### 3. Dispatcher API vs Collector API
+
+| API            | 端口 | 职责           | 使用者                        |
+| -------------- | ---- | -------------- | ----------------------------- |
+| **Dispatcher** | 2333 | 任务分发和管理 | Worker 领取任务、CLI 导入任务 |
+| **Collector**  | 2334 | 结果收集和存储 | Worker 提交结果、CLI 导出结果 |
+
+**为什么分开？**
+
+- 可独立扩展：可以部署多个 Dispatcher 和多个 Collector
+- 安全隔离：不同服务使用不同的认证令牌
+- 负载均衡：高并发时可以分别优化
+
+### 4. Extractor (提取器)
+
+每个网站的爬取逻辑封装为一个 Extractor：
+
+```
+apps/worker/implementations/
+├── bqgl.cc/     # 笔趣阁网站爬虫
+├── qidian/      # 起点中文网爬虫
+└── [new-site]/  # 新网站爬虫
+```
+
+Worker 启动时会加载配置的 Extractor 列表，根据任务标签决定使用哪个提取器。
+
+### 5. 动态并发控制 (Scaler)
+
+Worker 内置 **EMA (指数移动平均) 并发控制算法**：
+
+```
+任务执行时间监控
+       ↓
+  计算 EMA 平均值
+       ↓
+  ┌─────────────────┐
+  │ 执行时间短？    │ → 增加并发数
+  │ 执行时间长？    │ → 减少并发数
+  └─────────────────┘
+```
+
+**目的**：自动调整并发数，避免：
+
+- 并发过高：触发目标网站反爬
+- 并发过低：爬取效率低下
+
+---
+
+## 部署方式
+
+### 方式一：本地开发部署（推荐新手）
+
+适合：开发测试、学习系统架构
+
+#### 前置要求
 
 ```bash
 # 检查版本
-node --version        # v20.x 或更高
-yarn --version        # 4.x
-psql --version        # PostgreSQL 13+
+node --version      # 需要 >= 18 (推荐 20+)
+yarn --version      # 需要 v4.x
 ```
 
-## 本地生产部署
-
-### 1. 准备代码
+#### 步骤 1: 安装依赖
 
 ```bash
-# 克隆最新代码
 git clone https://github.com/rezics/ecrawler.git
 cd ecrawler
-
-# 切换到生产分支（如果有）
-git checkout main
-
-# 安装依赖
 yarn install
-
-# 验证依赖
-yarn workspace @ecrawler/server run build:bundle
-yarn workspace @ecrawler/worker run build:bundle
 ```
 
-### 2. 配置数据库
+#### 步骤 2: 配置数据库
 
-#### 使用云数据库（推荐用于生产）
+**选项 A: 使用 PGlite（内置，无需安装）**
+
+Server 默认使用 PGlite（嵌入式 PostgreSQL），无需额外配置，数据存储在本地文件。
+
+**选项 B: 使用外部 PostgreSQL**
 
 ```bash
-# 在云提供商创建 PostgreSQL 实例（AWS RDS、阿里云 RDS 等）
-# 获取连接字符串示例：
-# postgresql://username:password@db.example.com:5432/ecrawler
+# 设置数据库连接
+export DATABASE_URL="postgresql://user:password@localhost:5432/ecrawler"
 ```
 
-#### 或本地自建 PostgreSQL
+#### 步骤 3: 配置 Server
 
 ```bash
-# 安装 PostgreSQL（如未安装）
-# Ubuntu/Debian
-sudo apt-get update
-sudo apt-get install postgresql postgresql-contrib
-
-# macOS
-brew install postgresql
-
-# 启动服务
-sudo systemctl start postgresql   # Linux
-brew services start postgresql    # macOS
-
-# 创建数据库和用户
-sudo -u postgres createdb ecrawler
-sudo -u postgres createuser -P ecrawler_user
-# 设置密码并记录
-
-# 配置权限
-sudo -u postgres psql -c "ALTER ROLE ecrawler_user WITH CREATEDB;"
-```
-
-### 3. 环境配置
-
-#### Server 应用配置
-
-```bash
-# 创建 apps/server/.env.production 文件
-cat > apps/server/.env.production << EOF
-# Server 服务配置
+# 创建配置文件
+cat > apps/server/.env.development << 'EOF'
+# 服务配置
 HOST=0.0.0.0
 PORT=2333
 
-# 数据库配置（PostgreSQL）
-DATABASE_URL=postgresql://username:password@db.example.com:5432/ecrawler
+# 数据库 (使用 PGlite 可省略)
+# DATABASE_URL=postgresql://...
+
+# 认证令牌（生产环境必须修改！）
+SECRET_KEY=dev-secret-key-change-in-production
 EOF
 ```
 
-#### Worker 应用配置
+#### 步骤 4: 配置 Worker
 
 ```bash
-# 创建 apps/worker/.env.production 文件
-cat > apps/worker/.env.production << EOF
-# Worker ID（可选）
-# ID=worker-1
+cat > apps/worker/.env.development << 'EOF'
+# Server 地址
+BASE_URL=http://localhost:2333
 
-# Dispatcher 服务配置（指向 Server）
-DISPATCHER_BASE_URL=http://localhost:2333
-DISPATCHER_TOKEN=your-dispatcher-token
+# 认证令牌（与 Server 配置一致）
+SECRET_KEY=dev-secret-key-change-in-production
 
-# Collector 服务配置（指向 Server）
-COLLECTOR_BASE_URL=http://localhost:2334
-COLLECTOR_TOKEN=your-collector-token
+# Worker 标识
+ID=worker-1
+NAME=local-worker
 
-# 执行器列表（指定使用哪些 extractor）
-EXTRACTORS=@ecrawler/extractor-dummy/data.ts,@ecrawler/extractor-dummy/link.ts
+# 任务标签（决定处理哪些任务）
+TAGS=[]
 
-# 存储配置
-CRAWLEE_PERSIST_STORAGE=false
+# 启用的 Extractor
+EXTRACTORS=@ecrawler/extractor-dummy/data.ts
 EOF
 ```
 
-#### 初始化数据库
+#### 步骤 5: 启动服务
+
+**终端 1 - 启动 Server:**
 
 ```bash
-# 对于 PostgreSQL，确保数据库已创建
-# 本地 PostgreSQL
-psql -U postgres -c "CREATE DATABASE ecrawler;"
-
-# 如果使用 PGlite（开发环境），无需额外配置，首次运行会自动初始化
+yarn workspace @ecrawler/server run dev
 ```
 
-### 4. 使用 PM2 管理进程
+成功输出：
 
-PM2 是 Node.js 进程管理器，推荐用于生产环境。
+```
+[Server] Starting Server...
+[Server] Listening on http://0.0.0.0:2333
+```
+
+**终端 2 - 启动 Worker:**
 
 ```bash
-# 全局安装 PM2
+yarn workspace @ecrawler/worker run dev
+```
+
+成功输出：
+
+```
+[Worker] Connected to Dispatcher at http://localhost:2333
+[Worker] Waiting for tasks...
+```
+
+**终端 3 - 使用 CLI:**
+
+```bash
+# 查看帮助
+yarn workspace @ecrawler/cli run start --help
+
+# 导入任务
+yarn workspace @ecrawler/cli run start import \
+  http://localhost:2333 \
+  --token dev-secret-key-change-in-production \
+  --input tasks.json
+
+# 导出结果
+yarn workspace @ecrawler/cli run start export \
+  http://localhost:2334 \
+  --token dev-secret-key-change-in-production \
+  --output results.json
+```
+
+---
+
+### 方式二：PM2 生产部署
+
+适合：单机生产环境
+
+#### 步骤 1: 构建应用
+
+```bash
+# 安装依赖
+yarn install
+
+# 构建 Server
+yarn workspace @ecrawler/server run build:bundle
+
+# 构建 Worker
+yarn workspace @ecrawler/worker run build:bundle
+```
+
+#### 步骤 2: 创建生产配置
+
+```bash
+# Server 生产配置
+cat > apps/server/.env.production << 'EOF'
+HOST=0.0.0.0
+PORT=2333
+SECRET_KEY=your-secure-production-key-here
+DATABASE_URL=postgresql://user:password@db-host:5432/ecrawler
+EOF
+
+# Worker 生产配置
+cat > apps/worker/.env.production << 'EOF'
+BASE_URL=http://localhost:2333
+SECRET_KEY=your-secure-production-key-here
+ID=worker-prod-1
+NAME=production-worker
+TAGS=[]
+EXTRACTORS=@ecrawler/extractor-dummy/data.ts
+EOF
+```
+
+#### 步骤 3: 配置 PM2
+
+```bash
 npm install -g pm2
 
-# 创建 ecosystem.config.js 配置文件
 cat > ecosystem.config.js << 'EOF'
 module.exports = {
   apps: [
     {
       name: 'ecrawler-server',
-      script: 'yarn',
-      args: 'workspace @ecrawler/server run start',
+      script: 'node',
+      args: 'apps/server/dist/main.mjs',
       cwd: '/path/to/ecrawler',
       env_file: 'apps/server/.env.production',
       instances: 1,
-      exec_mode: 'fork',
       max_memory_restart: '500M',
-      watch: false,
-      ignore_watch: ['node_modules', 'dist', 'data'],
       error_file: './logs/server-error.log',
       out_file: './logs/server-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z'
+      log_date_format: 'YYYY-MM-DD HH:mm:ss'
     },
     {
       name: 'ecrawler-worker',
-      script: 'yarn',
-      args: 'workspace @ecrawler/worker run start',
+      script: 'node',
+      args: 'apps/worker/dist/main.mjs',
       cwd: '/path/to/ecrawler',
       env_file: 'apps/worker/.env.production',
       instances: 2,  // 可根据 CPU 核心数调整
-      exec_mode: 'fork',
       max_memory_restart: '500M',
-      watch: false,
-      ignore_watch: ['node_modules', 'dist'],
       error_file: './logs/worker-error.log',
       out_file: './logs/worker-out.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z'
+      log_date_format: 'YYYY-MM-DD HH:mm:ss'
     }
   ]
 };
 EOF
 
-# 创建日志目录
 mkdir -p logs
+```
 
-# 启动应用
+#### 步骤 4: 启动服务
+
+```bash
 pm2 start ecosystem.config.js
-
-# 保存 PM2 配置，系统重启后自动启动
-pm2 startup
 pm2 save
-
-# 查看日志
-pm2 logs
-pm2 logs ecrawler-server
-pm2 logs ecrawler-worker
-
-# 监控
-pm2 monit
+pm2 startup  # 设置开机自启
 ```
 
-### 5. 配置 Nginx 反向代理
+常用命令：
 
 ```bash
-# 安装 Nginx
-sudo apt-get install nginx
-
-# 创建 Nginx 配置
-sudo tee /etc/nginx/sites-available/ecrawler > /dev/null << 'EOF'
-upstream ecrawler_server {
-    server localhost:2333;
-}
-
-server {
-    listen 80;
-    server_name api.ecrawler.com;  # 修改为你的域名
-
-    # 重定向到 HTTPS（建议）
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name api.ecrawler.com;
-
-    # SSL 证书配置
-    ssl_certificate /etc/letsencrypt/live/api.ecrawler.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/api.ecrawler.com/privkey.pem;
-
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-    ssl_prefer_server_ciphers on;
-
-    # 日志配置
-    access_log /var/log/nginx/ecrawler_access.log;
-    error_log /var/log/nginx/ecrawler_error.log;
-
-    # 反向代理
-    location / {
-        proxy_pass http://ecrawler_server;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-
-        # 超时配置
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
-    }
-
-    # WebSocket 支持（如果需要）
-    location /ws {
-        proxy_pass http://ecrawler_server;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-    }
-
-    # 静态文件缓存
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-        expires 30d;
-        add_header Cache-Control "public, immutable";
-    }
-}
-EOF
-
-# 启用配置
-sudo ln -s /etc/nginx/sites-available/ecrawler /etc/nginx/sites-enabled/
-
-# 测试配置
-sudo nginx -t
-
-# 重启 Nginx
-sudo systemctl restart nginx
+pm2 status          # 查看状态
+pm2 logs            # 查看日志
+pm2 logs server     # 只看 Server 日志
+pm2 restart all     # 重启所有
+pm2 monit           # 实时监控
 ```
 
-### 6. 配置 SSL 证书（使用 Let's Encrypt）
-
-```bash
-# 安装 Certbot
-sudo apt-get install certbot python3-certbot-nginx
-
-# 申请证书
-sudo certbot certonly --nginx -d api.ecrawler.com
-
-# 自动续期
-sudo systemctl enable certbot.timer
-sudo systemctl start certbot.timer
-```
-
-## Docker 容器化部署
-
-### 1. 创建 Server Dockerfile
-
-```dockerfile
-# apps/server/Dockerfile
-FROM node:20-alpine
-
-WORKDIR /app
-
-# 安装构建依赖
-RUN apk add --no-cache python3 make g++
-
-# 复制 package 文件
-COPY package.json yarn.lock ./
-COPY apps/server/package.json apps/server/
-COPY libs/api libs/api/
-COPY libs/schemas libs/schemas/
-
-# 安装依赖
-RUN yarn install --frozen-lockfile --production=false
-
-# 复制源代码
-COPY apps/server/src apps/server/src
-COPY tsconfig.base.json tsconfig.json ./
-
-# 构建应用
-RUN yarn workspace @ecrawler/server run build:bundle
-
-# 最终镜像
-FROM node:20-alpine
-WORKDIR /app
-
-COPY --from=0 /app/apps/server/dist ./dist
-COPY --from=0 /app/node_modules ./node_modules
-
-EXPOSE 3000
-ENV NODE_ENV=production
-
-CMD ["node", "./dist/main.mjs"]
-```
-
-### 2. 创建 Worker Dockerfile
-
-```dockerfile
-# apps/worker/Dockerfile
-FROM node:20-alpine
-
-WORKDIR /app
-
-# 安装构建依赖
-RUN apk add --no-cache python3 make g++ curl
-
-# 复制 package 文件
-COPY package.json yarn.lock ./
-COPY apps/worker/package.json apps/worker/
-COPY apps/worker/implementations apps/worker/implementations
-COPY libs/api libs/api/
-COPY libs/schemas libs/schemas/
-
-# 安装依赖
-RUN yarn install --frozen-lockfile --production=false
-
-# 复制源代码
-COPY apps/worker/src apps/worker/src
-COPY tsconfig.base.json tsconfig.json ./
-
-# 构建应用
-RUN yarn workspace @ecrawler/worker run build:bundle
-
-# 最终镜像
-FROM node:20-alpine
-WORKDIR /app
-
-COPY --from=0 /app/apps/worker/dist ./dist
-COPY --from=0 /app/node_modules ./node_modules
-
-EXPOSE 3001
-
-ENV NODE_ENV=production
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3001/health || exit 1
-
-CMD ["node", "./dist/main.mjs"]
-```
-
-### 3. Docker Compose 配置
-
-```yaml
-# docker-compose.yml
-version: "3.8"
-
-services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: ecrawler-postgres
-    environment:
-      POSTGRES_USER: ecrawler_user
-      POSTGRES_PASSWORD: change_me_in_production
-      POSTGRES_DB: ecrawler
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ecrawler_user"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  server:
-    build:
-      context: .
-      dockerfile: apps/server/Dockerfile
-    container_name: ecrawler-server
-    environment:
-      NODE_ENV: production
-      DATABASE_URL: "postgresql://ecrawler_user:change_me_in_production@postgres:5432/ecrawler"
-      SERVER_PORT: 3000
-      SERVER_HOST: 0.0.0.0
-      LOG_LEVEL: info
-    ports:
-      - "3000:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-
-  worker:
-    build:
-      context: .
-      dockerfile: apps/worker/Dockerfile
-    container_name: ecrawler-worker
-    environment:
-      NODE_ENV: production
-      SERVER_URL: "http://server:3000"
-      LOG_LEVEL: info
-    depends_on:
-      server:
-        condition: service_healthy
-    restart: unless-stopped
-    deploy:
-      replicas: 2 # 根据需要调整副本数
-
-volumes:
-  postgres_data:
-```
-
-### 4. 构建和运行容器
-
-```bash
-# 构建镜像
-docker-compose build
-
-# 启动容器
-docker-compose up -d
-
-# 查看日志
-docker-compose logs -f server
-docker-compose logs -f worker
-
-# 执行数据库迁移
-docker-compose exec server npm run migrate
-
-# 停止容器
-docker-compose down
-
-# 清理资源
-docker-compose down -v  # 包括数据卷
-```
-
-## 云平台部署
-
-### 阿里云 ECS + RDS 部署
-
-```bash
-# 1. 购买 ECS 实例
-# - 系统：Ubuntu 20.04 LTS
-# - 实例类型：ecs.t6.medium（2vCPU, 4GB 内存）
-# - 存储：40GB SSD
-
-# 2. 购买 RDS PostgreSQL
-# - 引擎版本：PostgreSQL 13
-# - 实例规格：db.t3.small
-
-# 3. SSH 连接到 ECS
-ssh -i your_key.pem ubuntu@your_instance_ip
-
-# 4. 在 ECS 上部署
-# 参考上面的"本地生产部署"部分
-
-# 配置数据库连接
-cat > .env.production << EOF
-DATABASE_URL="postgresql://ecrawler_user:password@your_rds_endpoint:5432/ecrawler"
-SERVER_PORT=3000
-NODE_ENV=production
-EOF
-
-# 使用 PM2 启动应用
-pm2 start ecosystem.config.js
-pm2 startup
-pm2 save
-```
-
-### AWS EC2 + RDS 部署
-
-```bash
-# 1. 启动 EC2 实例
-# - AMI：Amazon Linux 2 或 Ubuntu Server 20.04 LTS
-# - 实例类型：t3.medium
-# - 存储：30GB gp3
-
-# 2. 创建 RDS PostgreSQL 数据库
-# - 引擎：PostgreSQL 13
-# - 实例类：db.t3.small
-# - 存储：20GB gp3
-
-# 3. 连接到 EC2
-ssh -i your_key.pem ubuntu@your_instance_ip
-
-# 4. 安装必要的工具
-sudo apt-get update
-sudo apt-get install -y curl git nodejs npm
-
-# 5. 安装 Yarn
-npm install -g yarn
-
-# 6. 部署应用
-git clone https://github.com/rezics/ecrawler.git
-cd ecrawler
-yarn install
-
-# 7. 配置环境变量
-export DATABASE_URL="postgresql://ecrawler_user:password@your_rds_endpoint:5432/ecrawler"
-export NODE_ENV=production
-
-# 8. 运行迁移
-yarn workspace @ecrawler/server run migrate
-
-# 9. 启动应用（使用 PM2）
-npm install -g pm2
-pm2 start ecosystem.config.js
-pm2 startup
-pm2 save
-```
-
-### Kubernetes 部署（advanced）
-
-```bash
-# 1. 创建 Namespace
-kubectl create namespace ecrawler
-
-# 2. 创建 ConfigMap 和 Secret
-kubectl create configmap ecrawler-config \
-  --from-literal=NODE_ENV=production \
-  --from-literal=LOG_LEVEL=info \
-  -n ecrawler
-
-kubectl create secret generic ecrawler-secrets \
-  --from-literal=DATABASE_URL="postgresql://ecrawler_user:password@postgres:5432/ecrawler" \
-  -n ecrawler
-
-# 3. 部署 PostgreSQL（使用 Helm）
-helm install postgres bitnami/postgresql \
-  -n ecrawler \
-  --set auth.username=ecrawler_user \
-  --set auth.password=your_password \
-  --set auth.database=ecrawler
-
-# 4. 创建 Kubernetes Deployment
-# 参考以下 YAML 文件：
-```
-
-**k8s-deployment.yaml**:
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ecrawler-server
-  namespace: ecrawler
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: ecrawler-server
-  template:
-    metadata:
-      labels:
-        app: ecrawler-server
-    spec:
-      containers:
-        - name: server
-          image: ecrawler:server
-          ports:
-            - containerPort: 2333
-          env:
-            - name: NODE_ENV
-              valueFrom:
-                configMapKeyRef:
-                  name: ecrawler-config
-                  key: NODE_ENV
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: ecrawler-secrets
-                  key: DATABASE_URL
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "250m"
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 2333
-            initialDelaySeconds: 30
-            periodSeconds: 10
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ecrawler-worker
-  namespace: ecrawler
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: ecrawler-worker
-  template:
-    metadata:
-      labels:
-        app: ecrawler-worker
-    spec:
-      containers:
-        - name: worker
-          image: ecrawler:worker
-          env:
-            - name: NODE_ENV
-              valueFrom:
-                configMapKeyRef:
-                  name: ecrawler-config
-                  key: NODE_ENV
-            - name: SERVER_URL
-              value: "http://ecrawler-server:2333"
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "250m"
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
-          livenessProbe:
-            exec:
-              command:
-                - /bin/sh
-                - -c
-                - curl -f http://localhost:2334/health || exit 1
-            initialDelaySeconds: 30
-            periodSeconds: 10
-```
 
-## 性能优化
+### 方式三：Docker 容器部署
 
-### 数据库优化
+适合：云环境、Kubernetes
 
-```sql
--- 创建索引以提高查询性能
-CREATE INDEX idx_tasks_status ON tasks(status);
-CREATE INDEX idx_tasks_created_at ON tasks(created_at DESC);
-CREATE INDEX idx_results_task_id ON results(task_id);
-
--- 定期运行 VACUUM 和 ANALYZE
-VACUUM ANALYZE;
-
--- 配置连接池（使用 pgBouncer）
-# 安装 pgBouncer
-sudo apt-get install pgbouncer
-
-# 配置 /etc/pgbouncer/pgbouncer.ini
-[databases]
-ecrawler = host=localhost port=5432 user=ecrawler_user password=password dbname=ecrawler
-
-[pgbouncer]
-pool_mode = transaction
-max_client_conn = 1000
-default_pool_size = 25
-```
-
-### Node.js 优化
+#### 步骤 1: 构建镜像
 
 ```bash
-# 增加事件监听器上限
-export NODE_OPTIONS="--max-old-space-size=2048"
+# 构建 Server 镜像
+cd apps/server
+podman build . -t ecrawler:server --network=host
 
-# 启用 UV_THREADPOOL_SIZE 提高异步 I/O 性能
-export UV_THREADPOOL_SIZE=128
-
-# 更新 ecosystem.config.js
-env: {
-  NODE_ENV: 'production',
-  NODE_OPTIONS: '--max-old-space-size=2048',
-  UV_THREADPOOL_SIZE: '128'
-}
+# 构建 Worker 镜像
+cd ../worker
+podman build . -t ecrawler:worker --network=host
 ```
 
-### Worker 集群扩展
+#### 步骤 2: 运行容器
+
+**启动 Server:**
 
 ```bash
-# ecosystem.config.js
-{
-  instances: 'max',  // 自动使用 CPU 核心数
-  exec_mode: 'cluster',
-  merge_logs: true
-}
+podman run -d \
+  --name ecrawler-server \
+  -p 2333:2333 \
+  -p 2334:2334 \
+  -e HOST=0.0.0.0 \
+  -e PORT=2333 \
+  -e SECRET_KEY=your-secure-key \
+  -e DATABASE_URL=postgresql://... \
+  ecrawler:server
 ```
 
-## 监控和日志
-
-### 日志管理
+**启动 Worker:**
 
 ```bash
-# 使用 Logrotate 管理日志
-sudo tee /etc/logrotate.d/ecrawler > /dev/null << 'EOF'
-/var/log/pm2/*.log {
-    daily
-    missingok
-    rotate 14
-    compress
-    delaycompress
-    notifempty
-    create 0640 nobody nobody
-    sharedscripts
-    postrotate
-        pm2 reload all
-    endscript
-}
-EOF
+podman run -d \
+  --name ecrawler-worker-1 \
+  -e BASE_URL=http://server-host:2333 \
+  -e SECRET_KEY=your-secure-key \
+  -e EXTRACTORS=@ecrawler/extractor-dummy/data.ts \
+  ecrawler:worker
 ```
 
-### 监控工具
+---
+
+## 配置详解
+
+### Server 配置项
+
+| 环境变量       | 必需   | 默认值    | 说明                                    |
+| -------------- | ------ | --------- | --------------------------------------- |
+| `HOST`         | 否     | `0.0.0.0` | 监听地址                                |
+| `PORT`         | 否     | `2333`    | Dispatcher API 端口 (Collector 自动 +1) |
+| `SECRET_KEY`   | **是** | -         | API 认证令牌                            |
+| `DATABASE_URL` | 否     | -         | PostgreSQL 连接串 (省略则使用 PGlite)   |
+
+### Worker 配置项
+
+| 环境变量     | 必需   | 默认值   | 说明                   |
+| ------------ | ------ | -------- | ---------------------- |
+| `BASE_URL`   | **是** | -        | Server 地址            |
+| `SECRET_KEY` | **是** | -        | API 认证令牌           |
+| `ID`         | 否     | 自动生成 | Worker 唯一标识        |
+| `NAME`       | 否     | `worker` | Worker 名称            |
+| `TAGS`       | 否     | `[]`     | 只处理带这些标签的任务 |
+| `EXTRACTORS` | **是** | -        | 启用的 Extractor 列表  |
+
+#### EXTRACTORS 配置示例
 
 ```bash
-# 1. PM2 + PM2 Plus（云监控）
-pm2 plus
+# 单个 Extractor
+EXTRACTORS=@ecrawler/extractor-dummy/data.ts
 
-# 2. 使用 Prometheus + Grafana
-# 在应用中添加 metrics endpoint
-yarn add prom-client
-
-# 3. 使用 ELK Stack（Elasticsearch, Logstash, Kibana）
-# 或使用 Loki + Promtail
-
-# 4. 使用 Sentry 进行错误跟踪
-# 在应用中集成 Sentry
+# 多个 Extractor (逗号分隔)
+EXTRACTORS=@ecrawler/extractor-bqgl/data.ts,@ecrawler/extractor-qidian/data.ts
 ```
+
+#### TAGS 配置说明
+
+标签用于任务路由：
+
+```bash
+# Worker 只处理带 "bqgl" 标签的任务
+TAGS=["bqgl"]
+
+# Worker 处理带 "bqgl" 或 "qidian" 标签的任务
+TAGS=["bqgl","qidian"]
+
+# 空数组表示处理所有任务
+TAGS=[]
+```
+
+---
+
+## 运行与使用
+
+### 完整工作流程
+
+```
+1. 启动 Server
+       ↓
+2. 启动 Worker (可以启动多个)
+       ↓
+3. 使用 CLI 导入任务
+       ↓
+4. Worker 自动领取并执行任务
+       ↓
+5. Worker 提交结果到 Server
+       ↓
+6. 使用 CLI 导出结果
+```
+
+### CLI 命令详解
+
+#### 1. 导入任务 (import)
+
+```bash
+yarn workspace @ecrawler/cli run start import \
+  <dispatcher-url> \           # Dispatcher API 地址
+  --token <your-token> \       # 认证令牌
+  --input tasks.json \         # 任务文件
+  --tags novel,bqgl            # 可选：为所有任务添加标签
+```
+
+**任务文件格式 (tasks.json):**
+
+```json
+[
+  {
+    "link": "https://example.com/book/1",
+    "tags": ["novel", "bqgl"],
+    "meta": {"priority": "high"}
+  },
+  {"link": "https://example.com/book/2", "tags": ["novel", "bqgl"]}
+]
+```
+
+**简化格式:**
+
+```json
+[
+  {"url": "https://example.com/book/1"},
+  {"href": "https://example.com/book/2"},
+  {"link": "https://example.com/book/3"}
+]
+```
+
+#### 2. 导出结果 (export)
+
+```bash
+yarn workspace @ecrawler/cli run start export \
+  <collector-url> \            # Collector API 地址
+  --token <your-token> \       # 认证令牌
+  --output results.json \      # 输出文件
+  --limit 100 \                # 可选：限制数量
+  --offset 0 \                 # 可选：跳过数量
+  --since 2026-01-01 \         # 可选：开始时间
+  --before 2026-12-31          # 可选：结束时间
+```
+
+#### 3. 查看任务列表 (tasks)
+
+```bash
+yarn workspace @ecrawler/cli run start tasks \
+  --token <your-token> \
+  --dispatcher http://localhost:2333 \
+  --list                      # 列出任务
+```
+
+#### 4. 查看结果列表 (list)
+
+```bash
+yarn workspace @ecrawler/cli run start list \
+  --token <your-token>
+```
+
+### Worker 运行原理
+
+Worker 的核心是一个无限循环：
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Worker 主循环                            │
+│                                                                 │
+│   while (true) {                                               │
+│       1. 从 Server 获取任务                                     │
+│           POST /tasks/next { tags, timeout: 30s }              │
+│                                                                 │
+│       2. 执行爬取 (Extractor.extract)                           │
+│           - 发送 HTTP 请求                                      │
+│           - 解析 HTML                                           │
+│           - 提取数据                                            │
+│           - 发现新链接                                          │
+│                                                                 │
+│       3. 提交结果到 Server                                      │
+│           - 爬取的数据 → POST /results                          │
+│           - 发现的链接 → POST /tasks (创建新任务)               │
+│                                                                 │
+│       4. 动态调整并发数                                         │
+│           - 根据执行时间自动调整                                │
+│   }                                                            │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**关键特性：**
+
+1. **长轮询获取任务**: Worker 会等待最多 30 秒，直到有新任务可用
+2. **自动发现链接**: 爬取过程中发现的新链接会自动创建为新任务
+3. **动态并发**: 根据任务执行时间自动调整并发数
+
+### Server 运行原理
+
+Server 同时运行两个 API 服务：
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Server                                  │
+│                                                                 │
+│   ┌─────────────────────────────────────────────────────────┐  │
+│   │ Dispatcher API (Port 2333)                              │  │
+│   │                                                         │  │
+│   │ POST /tasks         → 创建任务                          │  │
+│   │ GET  /tasks         → 查询任务列表                      │  │
+│   │ POST /tasks/next    → Worker 获取下一个任务             │  │
+│   │ PATCH /tasks/:id    → 更新任务状态                      │  │
+│   │ DELETE /tasks/:id   → 删除任务                          │  │
+│   └─────────────────────────────────────────────────────────┘  │
+│                                                                 │
+│   ┌─────────────────────────────────────────────────────────┐  │
+│   │ Collector API (Port 2334)                               │  │
+│   │                                                         │  │
+│   │ POST /results       → Worker 提交结果                   │  │
+│   │ GET  /results       → 查询结果列表                      │  │
+│   │ PATCH /results/:id  → 更新结果                          │  │
+│   │ DELETE /results/:id → 删除结果                          │  │
+│   └─────────────────────────────────────────────────────────┘  │
+│                                                                 │
+│   ┌─────────────────────────────────────────────────────────┐  │
+│   │ 数据库 (PostgreSQL / PGlite)                            │  │
+│   │                                                         │  │
+│   │ tasks 表: 任务队列                                       │  │
+│   │ results 表: 爬取结果                                     │  │
+│   │ token 表: 认证令牌                                       │  │
+│   └─────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
 
 ## 故障排查
 
 ### 常见问题
 
-#### 1. 连接池耗尽
+#### 1. Server 启动失败：端口被占用
 
 ```bash
-# 症状：频繁出现连接超时错误
-# 解决：
-# - 增加数据库连接池大小
-# - 减少应用实例的连接数
-# - 使用 PgBouncer 连接池
+# 检查端口占用
+lsof -i :2333
+lsof -i :2334
+
+# 结束占用进程
+kill -9 <PID>
+
+# 或更改端口
+PORT=3000 yarn workspace @ecrawler/server run dev
 ```
 
-#### 2. 内存泄漏
+#### 2. Worker 连接 Server 失败
+
+**症状**: `Error: connect ECONNREFUSED`
+
+**检查步骤**:
 
 ```bash
-# 使用 Node.js 调试工具
-node --inspect=0.0.0.0:9229 apps/server/dist/main.mjs
+# 1. 确认 Server 正在运行
+curl http://localhost:2333/health
 
-# 从另一个终端连接 Chrome DevTools
-# chrome://inspect
+# 2. 检查 BASE_URL 配置
+echo $BASE_URL
 
-# 生成 heap snapshot
-node --max-old-space-size=4096 --expose-gc apps/server/dist/main.mjs
+# 3. 检查网络连通性
+ping localhost
 ```
 
-#### 3. Worker 频繁崩溃
+#### 3. 认证失败：401 Unauthorized
+
+**原因**: Token 不匹配
+
+**解决**:
 
 ```bash
-# 检查日志
+# 确认 Server 和 Worker 使用相同的 SECRET_KEY
+# Server 配置
+grep SECRET_KEY apps/server/.env.development
+
+# Worker 配置
+grep SECRET_KEY apps/worker/.env.development
+
+# CLI 调用时使用正确的 token
+--token your-correct-token
+```
+
+#### 4. Worker 无法获取任务
+
+**症状**: Worker 空闲，没有执行任何任务
+
+**可能原因**:
+
+1. **任务队列为空**: 使用 CLI 导入任务
+2. **标签不匹配**: Worker 的 `TAGS` 与任务的 `tags` 不匹配
+
+```bash
+# 检查 Worker 配置的标签
+cat apps/worker/.env.development | grep TAGS
+
+# 导入任务时添加匹配的标签
+yarn workspace @ecrawler/cli run start import \
+  http://localhost:2333 \
+  --token your-token \
+  --input tasks.json \
+  --tags bqgl
+```
+
+#### 5. 数据库连接失败
+
+**症状**: `Error: connect ECONNREFUSED` 或数据库错误
+
+**PGlite (默认)**:
+
+```bash
+# 清除本地数据库重新初始化
+rm -rf .pglite
+yarn workspace @ecrawler/server run dev
+```
+
+**PostgreSQL**:
+
+```bash
+# 检查数据库连接
+psql $DATABASE_URL -c "SELECT 1;"
+
+# 检查数据库是否存在
+psql -h localhost -U postgres -c "\l" | grep ecrawler
+
+# 创建数据库
+createdb ecrawler
+```
+
+#### 6. 内存不足
+
+**症状**: Worker 或 Server 频繁崩溃
+
+**解决**:
+
+```bash
+# 增加 Node.js 内存限制
+export NODE_OPTIONS="--max-old-space-size=2048"
+
+# 或在 PM2 配置中调整
+max_memory_restart: '1G'
+```
+
+### 日志查看
+
+```bash
+# PM2 日志
+pm2 logs ecrawler-server
 pm2 logs ecrawler-worker
 
-# 增加内存限制
-# 在 ecosystem.config.js 中修改 max_memory_restart
+# 实时日志
+pm2 logs --lines 100
 
-# 检查超时配置
-export WORKER_TIMEOUT=120000
+# 直接运行时的输出
+# 日志会直接打印到终端
 ```
 
 ### 健康检查
 
 ```bash
-# 检查 Server 状态
-curl -s http://localhost:2333/health | jq .
+# 检查 Dispatcher API
+curl -H "Authorization: Bearer your-token" \
+  http://localhost:2333/tasks?limit=1
 
-# 检查 Worker 连接
-curl -s http://localhost:2334/health | jq .
+# 检查 Collector API
+curl -H "Authorization: Bearer your-token" \
+  http://localhost:2334/results?limit=1
 
-# 检查数据库连接
-psql $DATABASE_URL -c "SELECT 1;"
-
-# 检查进程状态
-pm2 status
+# 检查数据库 (PostgreSQL)
+psql $DATABASE_URL -c "SELECT COUNT(*) FROM tasks;"
+psql $DATABASE_URL -c "SELECT COUNT(*) FROM results;"
 ```
-
-## 相关链接
-
-- [Node.js 生产环境最佳实践](https://nodejs.org/en/docs/guides/nodejs-web-app-in-the-cloud/)
-- [PostgreSQL 性能调优](https://www.postgresql.org/docs/current/performance-tips.html)
-- [Nginx 文档](https://nginx.org/en/docs/)
-- [Docker 最佳实践](https://docs.docker.com/develop/dev-best-practices/)
-- [PM2 文档](https://pm2.keymetrics.io/docs)
 
 ---
 
-**注意**: 在部署到生产环境前，请务必：
+## 下一步
 
-- 更改所有默认密码
-- 配置 SSL/TLS 证书
-- 设置防火墙规则
-- 启用日志和监控
-- 准备备份和恢复策略
-- 测试故障恢复流程
+- [Extractor 实现指南](./EXTRACTOR_IMPLEMENTATION.md) - 学习如何添加新网站支持
+- [API 文档](./API.md) - 查看完整的 API 接口说明
+- [系统架构](./ARCHITECTURE.md) - 深入了解系统设计
+
+## 获取帮助
+
+- [GitHub Issues](https://github.com/rezics/ecrawler/issues)
+- [项目讨论](https://github.com/rezics/ecrawler/discussions)
+
+---
+
+**最后更新**: 2026-03-06
