@@ -1,5 +1,13 @@
 import {resolve} from "node:path"
-import {getStringArg, hasFlag, parseArgs, requireLinux, requireRoot, runCommand, serviceName} from "./shared.ts"
+import {
+  getStringArg,
+  hasFlag,
+  parseArgs,
+  requireLinux,
+  requireRoot,
+  runCommand,
+  serviceName
+} from "./shared.ts"
 
 type DeployOptions = {
   readonly repoDir: string
@@ -13,7 +21,10 @@ type DeployOptions = {
 }
 
 function getCurrentBranch(repoDir: string): string {
-  return runCommand("git", ["rev-parse", "--abbrev-ref", "HEAD"], {cwd: repoDir, captureOutput: true})
+  return runCommand("git", ["rev-parse", "--abbrev-ref", "HEAD"], {
+    cwd: repoDir,
+    captureOutput: true
+  })
 }
 
 function readOptions(): DeployOptions {
@@ -34,9 +45,14 @@ function readOptions(): DeployOptions {
 }
 
 function ensureCleanWorktree(repoDir: string): void {
-  const status = runCommand("git", ["status", "--porcelain"], {cwd: repoDir, captureOutput: true})
+  const status = runCommand("git", ["status", "--porcelain"], {
+    cwd: repoDir,
+    captureOutput: true
+  })
   if (status.length > 0) {
-    throw new Error("Working tree is dirty. Commit or stash changes first, or rerun with --allow-dirty.")
+    throw new Error(
+      "Working tree is dirty. Commit or stash changes first, or rerun with --allow-dirty."
+    )
   }
 }
 
@@ -49,16 +65,35 @@ function main(): void {
     ensureCleanWorktree(options.repoDir)
   }
 
-  runCommand("git", ["fetch", options.remote, options.branch, "--prune"], {cwd: options.repoDir})
-  runCommand("git", ["pull", "--ff-only", options.remote, options.branch], {cwd: options.repoDir})
+  runCommand("git", ["fetch", options.remote, options.branch, "--prune"], {
+    cwd: options.repoDir
+  })
+
+  runCommand(
+    "git",
+    ["reset", "--hard", `${options.remote}/${options.branch}`],
+    {cwd: options.repoDir}
+  )
+
+  runCommand("git", ["clean", "-fd"], {cwd: options.repoDir})
 
   if (!options.skipInstall) {
-    runCommand("corepack", ["yarn", "install", "--immutable"], {cwd: options.repoDir})
+    runCommand("corepack", ["yarn", "install", "--immutable"], {
+      cwd: options.repoDir
+    })
   }
 
   if (!options.skipBuild) {
-    runCommand("corepack", ["yarn", "workspace", "@ecrawler/server", "run", "build:bundle"], {cwd: options.repoDir})
-    runCommand("corepack", ["yarn", "workspace", "@ecrawler/worker", "run", "build:bundle"], {cwd: options.repoDir})
+    runCommand(
+      "corepack",
+      ["yarn", "workspace", "@ecrawler/server", "run", "build:bundle"],
+      {cwd: options.repoDir}
+    )
+    runCommand(
+      "corepack",
+      ["yarn", "workspace", "@ecrawler/worker", "run", "build:bundle"],
+      {cwd: options.repoDir}
+    )
   }
 
   if (!options.skipRestart) {
@@ -68,8 +103,12 @@ function main(): void {
     runCommand("systemctl", ["daemon-reload"])
     runCommand("systemctl", ["restart", serverService, workerService])
 
-    const serverStatus = runCommand("systemctl", ["is-active", serverService], {captureOutput: true})
-    const workerStatus = runCommand("systemctl", ["is-active", workerService], {captureOutput: true})
+    const serverStatus = runCommand("systemctl", ["is-active", serverService], {
+      captureOutput: true
+    })
+    const workerStatus = runCommand("systemctl", ["is-active", workerService], {
+      captureOutput: true
+    })
 
     console.log(`${serverService}: ${serverStatus}`)
     console.log(`${workerService}: ${workerStatus}`)
