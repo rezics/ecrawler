@@ -3,9 +3,12 @@
     "crawlee",
     "ecrawler",
     "esnext",
+    "getent",
     "millis",
+    "nologin",
     "qidian",
-    "TIMESTAMPTZ"
+    "TIMESTAMPTZ",
+    "Worktree"
   ],
   "typescript.tsdk": "node_modules/typescript/lib"
 }

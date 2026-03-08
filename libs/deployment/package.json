@@ -1,0 +1,17 @@
+{
+	"name": "@ecrawler/deployment",
+	"version": "0.1.0",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"install:services": "yarn run -T tsx ./src/install-services.ts",
+		"deploy:latest": "yarn run -T tsx ./src/deploy.ts"
+	},
+	"exports": {
+		".": "./src/index.ts",
+		"./*": "./src/*"
+	},
+	"dependencies": {
+		"@types/node": "^25.3.5"
+	}
+}
