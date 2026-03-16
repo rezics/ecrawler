@@ -43,6 +43,8 @@ sudo ./libs/deployment/scripts/install-services.sh --repo-dir /opt/ecrawler
 
 ## 更新并部署
 
+journalctl -u ecrawler-server -n 100 --no-pager
+
 ```bash
 cd /opt/ecrawler
 chmod +x libs/deployment/scripts/deploy-latest.sh

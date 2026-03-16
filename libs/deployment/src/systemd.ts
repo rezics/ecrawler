@@ -39,7 +39,7 @@ export function renderServiceUnit(options: ServiceTemplateOptions, kind: Service
     `WorkingDirectory=${repoDir}`,
     `Environment=NODE_ENV=${options.nodeEnv}`,
     `EnvironmentFile=${envFile}`,
-    `ExecStart=/usr/bin/env yarn workspace ${workspace} run start`,
+    `ExecStart=/root/.nvm/versions/node/v24.14.0/bin/corepack corepack yarn workspace ${workspace} run start`,
     "Restart=always",
     "RestartSec=5",
     "KillSignal=SIGINT",
