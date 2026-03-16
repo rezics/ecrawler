@@ -5,4 +5,4 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd -- "${SCRIPT_DIR}/../../.." && pwd)"
 
 cd "${REPO_DIR}"
-corepack yarn workspace @ecrawler/deployment run deploy:latest "$@"
+yarn workspace @ecrawler/deployment run deploy:latest "$@"
