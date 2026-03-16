@@ -20,10 +20,8 @@ export function getServiceFilePath(systemdDir: string, servicePrefix: string, ki
 export function renderServiceUnit(options: ServiceTemplateOptions, kind: ServiceKind): string {
   const repoDir = toSystemdPath(resolve(options.repoDir))
   const envFile = toSystemdPath(resolve(kind === "server" ? options.serverEnvFile : options.workerEnvFile))
-  const entrypoint = toSystemdPath(
-    resolve(options.repoDir, kind === "server" ? "apps/server/dist/main.mjs" : "apps/worker/dist/main.mjs")
-  )
   const description = kind === "server" ? "ecrawler server" : "ecrawler worker"
+  const workspace = kind === "server" ? "@ecrawler/server" : "@ecrawler/worker"
   const extraUnitDependencies =
     kind === "worker"
       ? `After=network-online.target ${serviceName(options.servicePrefix, "server")}\nWants=network-online.target ${serviceName(options.servicePrefix, "server")}`
@@ -41,7 +39,7 @@ export function renderServiceUnit(options: ServiceTemplateOptions, kind: Service
     `WorkingDirectory=${repoDir}`,
     `Environment=NODE_ENV=${options.nodeEnv}`,
     `EnvironmentFile=${envFile}`,
-    `ExecStart=/usr/bin/env node ${entrypoint}`,
+    `ExecStart=/usr/bin/env corepack yarn workspace ${workspace} run start`,
     "Restart=always",
     "RestartSec=5",
     "KillSignal=SIGINT",

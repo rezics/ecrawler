@@ -83,17 +83,8 @@ function main(): void {
     })
   }
 
-  if (!options.skipBuild) {
-    runCommand(
-      "corepack",
-      ["yarn", "workspace", "@ecrawler/server", "run", "build:bundle"],
-      {cwd: options.repoDir}
-    )
-    runCommand(
-      "corepack",
-      ["yarn", "workspace", "@ecrawler/worker", "run", "build:bundle"],
-      {cwd: options.repoDir}
-    )
+  if (options.skipBuild) {
+    console.log("Ignoring deprecated --skip-build flag. Deployment no longer runs build steps.")
   }
 
   if (!options.skipRestart) {

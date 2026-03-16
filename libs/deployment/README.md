@@ -5,7 +5,7 @@
 ## 包含内容
 
 - `src/install-services.ts`：生成并安装 systemd service。
-- `src/deploy.ts`：拉取最新 Git 代码、安装依赖、构建并重启服务。
+- `src/deploy.ts`：拉取最新 Git 代码、安装依赖并重启服务。
 - `scripts/install-services.sh`：安装 service 的 shell 脚本入口。
 - `scripts/deploy-latest.sh`：更新并部署的 shell 脚本入口。
 
@@ -52,10 +52,9 @@ sudo ./libs/deployment/scripts/deploy-latest.sh --repo-dir /opt/ecrawler --branc
 部署脚本会执行以下流程：
 
 1. `git fetch` 拉取远端最新代码。
-2. `git pull --ff-only` 更新当前分支。
+2. `git reset --hard <remote>/<branch>` 同步到目标分支最新提交，并清理未跟踪文件。
 3. `corepack yarn install --immutable` 安装依赖。
-4. 构建 `@ecrawler/server` 和 `@ecrawler/worker` 的 bundle。
-5. `systemctl restart` 重启两个 service。
+4. `systemctl restart` 重启两个 service。
 
 常用参数：
 
@@ -64,10 +63,10 @@ sudo ./libs/deployment/scripts/deploy-latest.sh --repo-dir /opt/ecrawler --branc
 - `--service-prefix ecrawler`
 - `--allow-dirty`
 - `--skip-install`
-- `--skip-build`
+- `--skip-build`：兼容保留参数，当前部署策略下不会触发构建
 - `--skip-restart`
 
 ## 说明
 
-- 这套脚本假设生产环境通过构建产物启动，因此 service 会执行 `apps/server/dist/main.mjs` 和 `apps/worker/dist/main.mjs`。
+- 这套脚本假设生产环境通过 `corepack yarn workspace ... run start` 直接启动服务源码入口，不依赖 `dist` 构建产物。
 - `deploy-latest.sh` 需要在已经安装过 service 的 Linux 主机上运行。
