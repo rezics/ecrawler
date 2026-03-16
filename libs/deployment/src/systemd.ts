@@ -9,6 +9,8 @@ export type ServiceTemplateOptions = {
   readonly serviceUser: string
   readonly serviceGroup: string
   readonly nodeEnv: string
+  readonly nodeBinDir: string
+  readonly yarnBinPath: string
   readonly serverEnvFile: string
   readonly workerEnvFile: string
 }
@@ -19,9 +21,12 @@ export function getServiceFilePath(systemdDir: string, servicePrefix: string, ki
 
 export function renderServiceUnit(options: ServiceTemplateOptions, kind: ServiceKind): string {
   const repoDir = toSystemdPath(resolve(options.repoDir))
+  const nodeBinDir = toSystemdPath(resolve(options.nodeBinDir))
+  const yarnBinPath = toSystemdPath(resolve(options.yarnBinPath))
   const envFile = toSystemdPath(resolve(kind === "server" ? options.serverEnvFile : options.workerEnvFile))
   const description = kind === "server" ? "ecrawler server" : "ecrawler worker"
   const workspace = kind === "server" ? "@ecrawler/server" : "@ecrawler/worker"
+  const servicePath = `${nodeBinDir}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`
   const extraUnitDependencies =
     kind === "worker"
       ? `After=network-online.target ${serviceName(options.servicePrefix, "server")}\nWants=network-online.target ${serviceName(options.servicePrefix, "server")}`
@@ -38,9 +43,10 @@ export function renderServiceUnit(options: ServiceTemplateOptions, kind: Service
     `User=root`,
     `Group=${options.serviceGroup}`,
     `WorkingDirectory=${repoDir}`,
-    `Environment=NODE_ENV=${options.nodeEnv}`,
+    // `Environment=NODE_ENV=${options.nodeEnv}`,
+    `Environment=PATH=${servicePath}`,
     `EnvironmentFile=${envFile}`,
-    `ExecStart=/root/.nvm/versions/node/v24.14.0/bin/corepack corepack yarn workspace ${workspace} run start`,
+    `ExecStart=${yarnBinPath} workspace ${workspace} run start`,
     "Restart=always",
     "RestartSec=5",
     "KillSignal=SIGINT",

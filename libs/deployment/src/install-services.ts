@@ -9,6 +9,8 @@ type InstallOptions = {
   readonly serviceUser: string
   readonly serviceGroup: string
   readonly nodeEnv: string
+  readonly nodeBinDir: string
+  readonly yarnBinPath: string
   readonly serverEnvFile: string
   readonly workerEnvFile: string
   readonly createUser: boolean
@@ -27,6 +29,8 @@ function readOptions(): InstallOptions {
     serviceUser: getStringArg(parsed, "service-user", "ecrawler"),
     serviceGroup: getStringArg(parsed, "service-group", "ecrawler"),
     nodeEnv: getStringArg(parsed, "node-env", "production"),
+    nodeBinDir: resolve(getStringArg(parsed, "node-bin-dir", "/root/.nvm/versions/node/v24.14.0/bin")),
+    yarnBinPath: resolve(getStringArg(parsed, "yarn-bin-path", "/root/.nvm/versions/node/v24.14.0/bin/yarn")),
     serverEnvFile: resolve(repoDir, getStringArg(parsed, "server-env-file", "apps/server/.env.production")),
     workerEnvFile: resolve(repoDir, getStringArg(parsed, "worker-env-file", "apps/worker/.env.production")),
     createUser: !hasFlag(parsed, "skip-user"),
