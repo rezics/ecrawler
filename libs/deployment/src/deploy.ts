@@ -56,6 +56,19 @@ function ensureCleanWorktree(repoDir: string): void {
   }
 }
 
+function getServiceStatus(service: string): string {
+  try {
+    return runCommand("systemctl", ["is-active", service], {
+      captureOutput: true
+    })
+  } catch (error) {
+    if (error instanceof Error) {
+      return error.message
+    }
+    return "unknown"
+  }
+}
+
 function main(): void {
   requireLinux()
   requireRoot()
@@ -84,7 +97,9 @@ function main(): void {
   }
 
   if (options.skipBuild) {
-    console.log("Ignoring deprecated --skip-build flag. Deployment no longer runs build steps.")
+    console.log(
+      "Ignoring deprecated --skip-build flag. Deployment no longer runs build steps."
+    )
   }
 
   if (!options.skipRestart) {
@@ -94,12 +109,8 @@ function main(): void {
     runCommand("systemctl", ["daemon-reload"])
     runCommand("systemctl", ["restart", serverService, workerService])
 
-    const serverStatus = runCommand("systemctl", ["is-active", serverService], {
-      captureOutput: true
-    })
-    const workerStatus = runCommand("systemctl", ["is-active", workerService], {
-      captureOutput: true
-    })
+    const serverStatus = getServiceStatus(serverService)
+    const workerStatus = getServiceStatus(workerService)
 
     console.log(`${serverService}: ${serverStatus}`)
     console.log(`${workerService}: ${workerStatus}`)
