@@ -13,6 +13,7 @@ export class Client extends Effect.Tag("Client")<
     readonly submit: (
       input: ExtractorResult
     ) => Effect.Effect<void, never, never>
+    readonly renewLease: (taskId: string) => Effect.Effect<void, never, never>
   }
 >() {
   static readonly Default = Layer.scoped(
@@ -42,12 +43,13 @@ export class Client extends Effect.Tag("Client")<
 
       const taskQueue = yield* Queue.unbounded<Task.Task>()
 
-      const pollTimeout = 30
+      const pollTimeout = config.pollTimeout
       const tags = config.tags
+      const workerId = config.id
 
       yield* Effect.gen(function* () {
         const task = yield* dispatcherClient.dispatcher.nextTask({
-          payload: {},
+          payload: {workerId},
           urlParams: {tags, timeout: pollTimeout}
         })
         yield* Queue.offer(taskQueue, task)
@@ -61,6 +63,16 @@ export class Client extends Effect.Tag("Client")<
 
       return Client.of({
         queue: taskQueue,
+        renewLease: taskId =>
+          Effect.schedule(
+            dispatcherClient.dispatcher
+              .renewLease({
+                path: {id: taskId},
+                payload: {workerId}
+              })
+              .pipe(Effect.ignore),
+            Schedule.spaced(config.renewInterval)
+          ),
         submit: result =>
           Effect.gen(function* () {
             const firstLink = yield* Iterable.head(result.links)

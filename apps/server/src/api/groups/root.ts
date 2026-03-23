@@ -6,6 +6,8 @@ import {TaskNotFoundError} from "@ecrawler/api/schemas/Task.ts"
 import {HttpApiBuilder} from "@effect/platform"
 import {Array, Effect, Layer, Schedule, Duration, pipe} from "effect"
 import {and, arrayContains, asc, eq, gte, lt, SQL} from "drizzle-orm"
+
+const LEASE_DURATION_MS = Duration.toMillis(Duration.minutes(5))
 import * as schema from "../../database/schemas"
 import {Database} from "../../database/index.ts"
 
@@ -190,7 +192,7 @@ const dispatcherGroup = Layer.unwrapEffect(
             UnknownError.mapError
           )
         )
-        .handle("nextTask", ({urlParams}) =>
+        .handle("nextTask", ({urlParams, payload}) =>
           pipe(
             db.transaction(tx =>
               Effect.gen(function* () {
@@ -224,7 +226,11 @@ const dispatcherGroup = Layer.unwrapEffect(
 
                 const [updated] = yield* tx
                   .update(schema.tasks)
-                  .set({status: "processing"})
+                  .set({
+                    status: "processing",
+                    worker_id: payload.workerId,
+                    lease_expires_at: new Date(Date.now() + LEASE_DURATION_MS)
+                  })
                   .where(eq(schema.tasks.id, task.id))
                   .returning()
 
@@ -240,6 +246,28 @@ const dispatcherGroup = Layer.unwrapEffect(
               duration: Duration.seconds(urlParams.timeout ?? 30),
               onTimeout: () => new TaskNotFoundError()
             })
+          )
+        )
+        .handle("renewLease", ({path, payload}) =>
+          pipe(
+            db
+              .update(schema.tasks)
+              .set({lease_expires_at: new Date(Date.now() + LEASE_DURATION_MS)})
+              .where(
+                and(
+                  eq(schema.tasks.id, path.id),
+                  eq(schema.tasks.worker_id, payload.workerId),
+                  eq(schema.tasks.status, "processing")
+                )
+              )
+              .returning({id: schema.tasks.id}),
+            UnknownError.mapError,
+            Effect.flatMap(rows =>
+              Array.head(rows).pipe(
+                Effect.mapError(() => new TaskNotFoundError()),
+                Effect.asVoid
+              )
+            )
           )
         )
     )

@@ -4,7 +4,7 @@ import {Scaler} from "./services/Scaler.ts"
 import {Client} from "./services/Client.ts"
 
 export const program = Effect.gen(function* () {
-  const {queue, submit} = yield* Client
+  const {queue, submit, renewLease} = yield* Client
   const {init, next} = yield* Scaler
   const extract = yield* Extractor
 
@@ -15,14 +15,19 @@ export const program = Effect.gen(function* () {
     const results = yield* Queue.takeUpTo(queue, _concurrency).pipe(
       Effect.map(
         Chunk.map(task =>
-          extract.extract(task).pipe(
-            Effect.timed,
-            Effect.tap(([duration, result]) =>
-              next({task, result, duration}).pipe(
-                Effect.flatMap(target => Ref.set(concurrency, target))
+          Effect.scoped(
+            Effect.gen(function* () {
+              yield* renewLease(task.id).pipe(Effect.forkScoped)
+              return yield* extract.extract(task).pipe(
+                Effect.timed,
+                Effect.tap(([duration, result]) =>
+                  next({task, result, duration}).pipe(
+                    Effect.flatMap(target => Ref.set(concurrency, target))
+                  )
+                ),
+                Effect.map(Tuple.getSecond)
               )
-            ),
-            Effect.map(Tuple.getSecond)
+            })
           )
         )
       ),

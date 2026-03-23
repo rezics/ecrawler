@@ -69,9 +69,22 @@ export const UpdatePayload = Schema.Struct({
   })
   .pipe(Schema.partial)
 
-export const NextPayload = Schema.Struct({}).annotations({
+export const NextPayload = Schema.Struct({
+  workerId: Schema.String.annotations({
+    description: "Unique identifier of the worker claiming this task\n\n领取任务的 Worker 唯一标识"
+  })
+}).annotations({
   identifier: "NextTaskPayload",
   description: "Payload for getting the next task\n\n获取下一个任务的载荷"
+})
+
+export const RenewLeasePayload = Schema.Struct({
+  workerId: Schema.String.annotations({
+    description: "Worker ID that holds the lease\n\n持有租约的 Worker ID"
+  })
+}).annotations({
+  identifier: "RenewLeasePayload",
+  description: "Payload for renewing a task lease\n\n续约任务租约的载荷"
 })
 
 export const NextQueryParams = QueryParams.pipe(
@@ -96,5 +109,6 @@ export const TaskApi = {
   CreatePayload,
   UpdatePayload,
   NextPayload,
-  NextQueryParams
+  NextQueryParams,
+  RenewLeasePayload
 }
