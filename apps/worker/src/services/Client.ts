@@ -1,10 +1,12 @@
-import {Effect, Iterable, Layer, Queue, Schedule} from "effect"
+import {Effect, Iterable, Layer, Queue, Schedule, Duration} from "effect"
 import {Task} from "@ecrawler/schemas"
 import {WorkerConfig} from "./WorkerConfig"
 import {HttpApiClient, HttpClient, HttpClientRequest} from "@effect/platform"
 import DispatcherApi from "@ecrawler/api/dispatcher/index.ts"
 import CollectorApi from "@ecrawler/api/collector/index.ts"
 import type {ExtractorResult} from "./Extractor"
+
+const RENEW_INTERVAL = Duration.minutes(2)
 
 export class Client extends Effect.Tag("Client")<
   Client,
@@ -13,6 +15,7 @@ export class Client extends Effect.Tag("Client")<
     readonly submit: (
       input: ExtractorResult
     ) => Effect.Effect<void, never, never>
+    readonly renewLease: (taskId: string) => Effect.Effect<void, never, never>
   }
 >() {
   static readonly Default = Layer.scoped(
@@ -44,10 +47,11 @@ export class Client extends Effect.Tag("Client")<
 
       const pollTimeout = 30
       const tags = config.tags
+      const workerId = config.id
 
       yield* Effect.gen(function* () {
         const task = yield* dispatcherClient.dispatcher.nextTask({
-          payload: {},
+          payload: {workerId},
           urlParams: {tags, timeout: pollTimeout}
         })
         yield* Queue.offer(taskQueue, task)
@@ -61,6 +65,20 @@ export class Client extends Effect.Tag("Client")<
 
       return Client.of({
         queue: taskQueue,
+        renewLease: taskId =>
+          dispatcherClient.dispatcher
+            .renewLease({
+              path: {id: taskId},
+              payload: {workerId}
+            })
+            .pipe(
+              Effect.retry(
+                Schedule.exponential("1 seconds").pipe(Schedule.upTo("30 seconds"))
+              ),
+              Effect.repeat(Schedule.spaced(RENEW_INTERVAL)),
+              Effect.catchAll(() => Effect.void),
+              Effect.asVoid
+            ),
         submit: result =>
           Effect.gen(function* () {
             const firstLink = yield* Iterable.head(result.links)

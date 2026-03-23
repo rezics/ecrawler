@@ -11,7 +11,8 @@ const {
   CreatePayload,
   UpdatePayload,
   NextPayload,
-  NextQueryParams
+  NextQueryParams,
+  RenewLeasePayload
 } = TaskApi
 
 export default HttpApiGroup.make("dispatcher")
@@ -76,5 +77,17 @@ export default HttpApiGroup.make("dispatcher")
       .annotate(
         OpenApi.Description,
         "Fetches the next oldest available task matching the provided query filters.\n\n获取匹配提供查询过滤器的下一个最旧可用任务。"
+      )
+  )
+  .add(
+    HttpApiEndpoint.patch("renewLease")`/tasks/:id/renew`
+      .setPath(Schema.Struct({id: Schema.UUID}))
+      .setPayload(RenewLeasePayload)
+      .addSuccess(Schema.Void)
+      .addError(TaskNotFoundError)
+      .annotate(OpenApi.Summary, "Renew task lease")
+      .annotate(
+        OpenApi.Description,
+        "Renews the lease for a task currently being processed by a worker. Must be called periodically to prevent the task from being reclaimed.\n\n为 Worker 正在处理的任务续约。必须定期调用，否则任务将被回收并重新排队。"
       )
   )

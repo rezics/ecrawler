@@ -23,6 +23,9 @@ export const tasks = pgTable("tasks", {
   link: text("link").notNull(),
   meta: jsonb("meta"),
 
+  worker_id: text("worker_id"),
+  lease_expires_at: timestamp("lease_expires_at"),
+
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow()
 })
