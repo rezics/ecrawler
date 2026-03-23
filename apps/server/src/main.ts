@@ -5,8 +5,7 @@ import {Database} from "./database/index.ts"
 import {LeaseReaper} from "./services/LeaseReaper.ts"
 import {NodeContext, NodeRuntime} from "@effect/platform-node"
 
-const ApiLayer = Api.pipe(
-  Layer.provide(LeaseReaper.Default),
+const ApiLayer = Layer.mergeAll(Api, LeaseReaper).pipe(
   Layer.provide(Database.layer),
   Layer.provide(NodeContext.layer)
 )

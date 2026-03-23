@@ -66,19 +66,15 @@ export class Client extends Effect.Tag("Client")<
       return Client.of({
         queue: taskQueue,
         renewLease: taskId =>
-          dispatcherClient.dispatcher
-            .renewLease({
-              path: {id: taskId},
-              payload: {workerId}
-            })
-            .pipe(
-              Effect.retry(
-                Schedule.exponential("1 seconds").pipe(Schedule.upTo("30 seconds"))
-              ),
-              Effect.repeat(Schedule.spaced(RENEW_INTERVAL)),
-              Effect.catchAll(() => Effect.void),
-              Effect.asVoid
-            ),
+          Effect.schedule(
+            dispatcherClient.dispatcher
+              .renewLease({
+                path: {id: taskId},
+                payload: {workerId}
+              })
+              .pipe(Effect.ignore),
+            Schedule.spaced(RENEW_INTERVAL)
+          ),
         submit: result =>
           Effect.gen(function* () {
             const firstLink = yield* Iterable.head(result.links)

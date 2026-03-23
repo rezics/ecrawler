@@ -1,4 +1,4 @@
-import {Chunk, Effect, Fiber, Queue, Ref, Tuple} from "effect"
+import {Chunk, Effect, Queue, Ref, Tuple} from "effect"
 import {Extractor} from "./services/Extractor.ts"
 import {Scaler} from "./services/Scaler.ts"
 import {Client} from "./services/Client.ts"
@@ -15,20 +15,20 @@ export const program = Effect.gen(function* () {
     const results = yield* Queue.takeUpTo(queue, _concurrency).pipe(
       Effect.map(
         Chunk.map(task =>
-          Effect.gen(function* () {
-            const fiber = yield* renewLease(task.id).pipe(Effect.fork)
-            const result = yield* extract.extract(task).pipe(
-              Effect.timed,
-              Effect.tap(([duration, result]) =>
-                next({task, result, duration}).pipe(
-                  Effect.flatMap(target => Ref.set(concurrency, target))
-                )
-              ),
-              Effect.map(Tuple.getSecond)
-            )
-            yield* Fiber.interrupt(fiber)
-            return result
-          })
+          Effect.scoped(
+            Effect.gen(function* () {
+              yield* renewLease(task.id).pipe(Effect.forkScoped)
+              return yield* extract.extract(task).pipe(
+                Effect.timed,
+                Effect.tap(([duration, result]) =>
+                  next({task, result, duration}).pipe(
+                    Effect.flatMap(target => Ref.set(concurrency, target))
+                  )
+                ),
+                Effect.map(Tuple.getSecond)
+              )
+            })
+          )
         )
       ),
       Effect.flatMap(Effect.allWith({concurrency: "unbounded"})),
