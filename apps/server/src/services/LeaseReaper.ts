@@ -1,9 +1,7 @@
-import {Effect, Layer, Schedule, Duration} from "effect"
+import {Config, Duration, Effect, Layer, Schedule} from "effect"
 import {and, eq, isNotNull, lt} from "drizzle-orm"
 import {Database} from "../database/index.ts"
 import * as schema from "../database/schemas/index.ts"
-
-const REAPER_INTERVAL = Duration.minutes(1)
 
 const reapExpiredLeases = Effect.gen(function* () {
   const db = yield* Database
@@ -25,7 +23,15 @@ const reapExpiredLeases = Effect.gen(function* () {
 })
 
 export const LeaseReaper = Layer.scopedDiscard(
-  Effect.forkScoped(
-    Effect.repeat(reapExpiredLeases, Schedule.spaced(REAPER_INTERVAL))
-  )
+  Effect.gen(function* () {
+    const intervalSeconds = yield* Config.integer(
+      "LEASE_REAPER_INTERVAL_SECONDS"
+    ).pipe(Config.withDefault(60))
+    yield* Effect.forkScoped(
+      Effect.repeat(
+        reapExpiredLeases,
+        Schedule.spaced(Duration.seconds(intervalSeconds))
+      )
+    )
+  })
 )

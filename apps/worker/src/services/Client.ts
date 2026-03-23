@@ -1,12 +1,10 @@
-import {Effect, Iterable, Layer, Queue, Schedule, Duration} from "effect"
+import {Effect, Iterable, Layer, Queue, Schedule} from "effect"
 import {Task} from "@ecrawler/schemas"
 import {WorkerConfig} from "./WorkerConfig"
 import {HttpApiClient, HttpClient, HttpClientRequest} from "@effect/platform"
 import DispatcherApi from "@ecrawler/api/dispatcher/index.ts"
 import CollectorApi from "@ecrawler/api/collector/index.ts"
 import type {ExtractorResult} from "./Extractor"
-
-const RENEW_INTERVAL = Duration.minutes(2)
 
 export class Client extends Effect.Tag("Client")<
   Client,
@@ -45,7 +43,7 @@ export class Client extends Effect.Tag("Client")<
 
       const taskQueue = yield* Queue.unbounded<Task.Task>()
 
-      const pollTimeout = 30
+      const pollTimeout = config.pollTimeout
       const tags = config.tags
       const workerId = config.id
 
@@ -73,7 +71,7 @@ export class Client extends Effect.Tag("Client")<
                 payload: {workerId}
               })
               .pipe(Effect.ignore),
-            Schedule.spaced(RENEW_INTERVAL)
+            Schedule.spaced(config.renewInterval)
           ),
         submit: result =>
           Effect.gen(function* () {
